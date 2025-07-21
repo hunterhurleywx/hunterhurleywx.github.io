@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1920, height=1080"/>
+  <title>Live Weather Dashboard</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 1920px;
+      height: 1080px;
+      background: transparent;
+      overflow: hidden;
+    }
+    #container {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 384px;
+      height: 256px;
+      display: flex;
+      flex-direction: column;
+      border: 4px solid black;
+      background-color: rgba(255,255,255,0.8);
+      transition: background-color 0.5s ease;
+      z-index: 1000;
+    }
+    #map {
+      flex: 1;
+      border-bottom: 4px solid black;
+    }
+    #info {
+      padding: 8px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      text-align: left;
+    }
+    #clock {
+      position: fixed;
+      bottom: 280px;
+      left: 20px;
+      padding: 8px 12px;
+      border: 4px solid black;
+      background-color: rgba(255,255,255,0.8);
+      font-family: Arial, sans-serif;
+      font-size: 18px;
+      z-index: 1001;
+    }
+  </style>
+</head>
+<body>
+  <div id="clock">Loading clock...</div>
+  <div id="container">
+    <div id="map"></div>
+    <div id="info">Loading location info...</div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    let map, marker, radarLayer, warningLayer, countyLayer;
+
+    function updateClock() {
+      const now = new Date();
+      const localTime = now.toLocaleTimeString();
+      const utcTime = now.toUTCString().split(" ")[4];
+      document.getElementById("clock").textContent = `Local: ${localTime} | UTC: ${utcTime}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function distance(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI/180;
+      const dLon = (lon2 - lon1) * Math.PI/180;
+      const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    function bearing(lat1, lon1, lat2, lon2) {
+      const toRad = deg => deg * Math.PI/180;
+      const toDeg = rad => rad * 180/Math.PI;
+      const dLon = toRad(lon2 - lon1);
+      const y = Math.sin(dLon) * Math.cos(toRad(lat2));
+      const x = Math.cos(toRad(lat1))*Math.sin(toRad(lat2)) -
+                Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(dLon);
+      const brng = Math.atan2(y, x);
+      const compass = (toDeg(brng) + 360) % 360;
+      const dirs = ["N","NE","E","SE","S","SW","W","NW"];
+      return dirs[Math.round(compass/45)%8];
+    }
+
+    async function loadCounties() {
+      try {
+        const resp = await fetch("https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/counties.geojson");
+        return await resp.json();
+      } catch {
+        console.warn("Could not load counties.");
+        return null;
+      }
+    }
+
+    async function getRadarSite(lat, lon) {
+      try {
+        const response = await fetch("https://api.weather.gov/radar/stations");
+        const radars = await response.json();
+        let nearest = null;
+        let minDist = Infinity;
+        radars.features.forEach(station => {
+          const coords = station.geometry.coordinates;
+          const id = station.properties.stationIdentifier;
+          if (!coords || !id) return;
+          const d = distance(lat, lon, coords[1], coords[0]);
+          if (d < minDist) {
+            minDist = d;
+            nearest = id.toLowerCase();
+          }
+        });
+        return nearest;
+      } catch(e) {
+        console.warn("Radar station lookup failed", e);
+        return null;
+      }
+    }
+
+    async function getWeatherInfo(lat, lon) {
+      try {
+        const pointsResp = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+        const points = await pointsResp.json();
+
+        const city = points.properties.relativeLocation.properties.city;
+        const state = points.properties.relativeLocation.properties.state;
+        const countyUrl = points.properties.county;
+
+        let countyName = "Unknown";
+        try {
+          const countyResp = await fetch(countyUrl);
+          const countyData = await countyResp.json();
+          countyName = countyData.properties.name;
+        } catch {
+          console.warn("County fetch failed.");
+        }
+
+        const alertsResp = await fetch(`https://api.weather.gov/alerts/active?point=${lat},${lon}`);
+        const alerts = await alertsResp.json();
+
+        let bgColor = "rgba(255,255,255,0.8)";
+        let alertText = "No active alerts.";
+        if (alerts.features.length > 0) {
+          const event = alerts.features[0].properties.event;
+          if (event.includes("Tornado Warning")) bgColor = "red";
+          else if (event.includes("Severe Thunderstorm Warning")) bgColor = "yellow";
+          else if (event.includes("Tornado Watch")) bgColor = "pink";
+          else if (event.includes("Severe Thunderstorm Watch")) bgColor = "blue";
+          alertText = event;
+        }
+
+        document.getElementById("container").style.backgroundColor = bgColor;
+
+        const radarId = getRadarSite(lat, lon);
+
+        const cityCoords = points.properties.relativeLocation.geometry.coordinates;
+        const distKm = distance(lat, lon, cityCoords[1], cityCoords[0]);
+        const distMi = (distKm * 0.621371).toFixed(1);
+        const dir = bearing(cityCoords[1], cityCoords[0], lat, lon);
+
+
+        document.getElementById("info").innerHTML = `
+          <strong>ActiveRadar:</strong>${radarId}<br>
+          <strong>County:</strong> ${countyName}<br>
+          <strong>Nearest City:</strong> ${city}, ${state}<br>
+          <strong>Distance/Direction:</strong> ${distMi} mi ${dir}<br>
+          <strong>Alert:</strong> ${alertText}
+        `;
+      } catch (e) {
+        console.warn("Weather info failed", e);
+      }
+    }
+
+    async function setup() {
+      if (!navigator.geolocation) {
+        alert("Geolocation not supported.");
+        return;
+      }
+
+      const counties = await loadCounties();
+
+      navigator.geolocation.watchPosition(async pos => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+
+        if (!map) {
+          map = L.map("map").setView([lat, lon], 9);
+          marker = L.marker([lat, lon]).addTo(map);
+
+          if (counties) {
+            countyLayer = L.geoJSON(counties, {
+              style: { color: "gray", weight: 1, fillOpacity: 0 }
+            }).addTo(map);
+          }
+
+          warningLayer = L.tileLayer.wms(
+            "https://opengeo.ncep.noaa.gov/geoserver/wwa/warnings/wms",
+            {
+              layers: "wwa",
+              format: "image/png",
+              transparent: true,
+              version: "1.3.0"
+            }
+          ).addTo(map);
+        } else {
+          marker.setLatLng([lat, lon]);
+          map.setView([lat, lon]);
+        }
+
+        const radarId = await getRadarSite(lat, lon);
+
+        if (radarId) {
+          const wmsUrl = `https://opengeo.ncep.noaa.gov/geoserver/${radarId}/wms`;
+          const layerName = `${radarId}_sr_bref`;
+          if (radarLayer) map.removeLayer(radarLayer);
+          radarLayer = L.tileLayer.wms(wmsUrl, {
+            layers: layerName,
+            format: "image/png",
+            transparent: true,
+            version: "1.3.0"
+          }).addTo(map);
+        }
+
+        await getWeatherInfo(lat, lon);
+
+      }, error => {
+        console.error("Geolocation error:", error);
+        alert("Location error");
+      }, { enableHighAccuracy: true });
+    }
+
+    setup();
+  </script>
+</body>
+</html>
