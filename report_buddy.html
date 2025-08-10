@@ -46,8 +46,9 @@
     #captureBtn:active{background:rgba(255,255,255,.4)}
 
     #snapshot{position:absolute;inset:0;background:rgba(0,0,0,.85);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:40}
-    #snapshot img{max-width:100%;max-height:90%;border:4px solid #fff;border-radius:8px}
-    #snapshot button{margin-top:1rem;padding:.5rem 1rem;font-size:1rem;border:none;border-radius:6px;background:#fff;cursor:pointer}
+    #snapshot img{max-width:100%;max-height:80%;border:4px solid #fff;border-radius:8px}
+    #snapshot .button-container{display:flex;gap:1rem;margin-top:1rem}
+    #snapshot button{padding:.5rem 1rem;font-size:1rem;border:none;border-radius:6px;background:#fff;cursor:pointer}
     #loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:30}
 
     #tweetPanel{position:fixed;top:0;right:-100vw;width:98vw;height:100vh;background:rgba(0,0,0,.95);color:#fff;z-index:100;display:flex;align-items:center;justify-content:center;transition:right .3s ease; box-sizing: border-box; padding: 1rem; }
@@ -164,7 +165,13 @@
 
     <button id="captureBtn" title="Capture Screen"></button>
 
-    <div id="snapshot"><img id="snapshotImg" alt="Captured"/><button id="closeSnap">Close</button></div>
+    <div id="snapshot">
+      <img id="snapshotImg" alt="Captured"/>
+      <div class="button-container">
+        <button id="downloadSnap">Download</button>
+        <button id="closeSnap">Close</button>
+      </div>
+    </div>
 
     <div id="tweetPanel">
       <div id="tweetContent">
@@ -292,14 +299,32 @@
     }
 
     async function capturePhoto(){
-      const captureButton = document.getElementById('captureBtn'); 
-      // Set the opacity to 0 prior to the canvas capture
+      const captureButton = document.getElementById('captureBtn');
+      const eventSelector = document.getElementById('eventSelector');
+      const eventType = document.getElementById('eventType');
+      
+      // Hide elements before capture
       captureButton.style.opacity = '0';
+      
+      // Hide "Select Report Type" option if it's selected
+      const originalDisplay = eventSelector.style.display;
+      if (eventType.value === '') {
+        eventSelector.style.display = 'none';
+      }
+      
       const overlay=document.getElementById('snapshot'),img=document.getElementById('snapshotImg');
       const canvas=await html2canvas(document.getElementById('app'),{useCORS:true, scale: window.devicePixelRatio || 3});
-      img.src=canvas.toDataURL('image/png');
+      const dataUrl = canvas.toDataURL('image/png');
+      img.src=dataUrl;
+      
+      // Store the data URL for download functionality
+      img.dataset.dataUrl = dataUrl;
+      
       overlay.style.display='flex';
+      
+      // Restore hidden elements
       captureButton.style.opacity = '1';
+      eventSelector.style.display = originalDisplay;
     }
 
     async function fetchCountyName(url){
@@ -752,12 +777,30 @@
     }
 
 
+    function downloadImage() {
+      const img = document.getElementById('snapshotImg');
+      const dataUrl = img.dataset.dataUrl;
+      if (dataUrl) {
+        const link = document.createElement('a');
+        const now = new Date();
+        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(now.getUTCDate()).padStart(2, '0');
+        const year = now.getUTCFullYear();
+        const hours = String(now.getUTCHours()).padStart(2, '0');
+        const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+        link.download = `report-buddy-${month}_${day}_${year}_${hours}${minutes}z.png`;
+        link.href = dataUrl;
+        link.click();
+      }
+    }
+
     window.addEventListener('load',()=>{
       startCamera();
       initMap();
       setupMenus();
       document.getElementById('captureBtn').addEventListener('click',capturePhoto);
       document.getElementById('closeSnap').addEventListener('click',()=>document.getElementById('snapshot').style.display='none');
+      document.getElementById('downloadSnap').addEventListener('click',downloadImage);
       document.getElementById('zoomIn').addEventListener('click',zoomIn);
       document.getElementById('zoomOut').addEventListener('click',zoomOut);
     });
