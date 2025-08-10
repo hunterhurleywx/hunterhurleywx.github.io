@@ -316,8 +316,8 @@
     <ol>
       <li><strong>Select report type</strong> from dropdown menu at top
         <ul style="list-style-type: none; margin-top: 0.5rem;">
-          <li style="margin-left: 1rem;">• <strong>For hail:</strong> Select size or describe if larger than 5"</li>
-          <li style="margin-left: 1rem;">• <strong>For damage:</strong> Briefly describe what you see</li>
+          <li style="margin-left: 0.5rem;">• <strong>For hail:</strong> Select size or describe if larger than 5"</li>
+          <li style="margin-left: 0.5rem;">• <strong>For damage:</strong> Briefly describe what you see</li>
         </ul>
       </li>
       <li><strong>Take photo</strong> using the capture button</li>
@@ -848,12 +848,16 @@
       isPanelOpen = false;
     }
 
+    let isHowToReportOpen = false;
+
     function openHowToReport() {
       document.getElementById('howToReportPanel').classList.add('open');
+      isHowToReportOpen = true;
     }
 
     function closeHowToReport() {
       document.getElementById('howToReportPanel').classList.remove('open');
+      isHowToReportOpen = false;
     }
 
     // Swipe detection
@@ -863,6 +867,13 @@
 
     document.addEventListener('touchend', e => {
       if (touchStartX === null) return;
+      
+      // Disable swipe gestures when How to Report panel is open
+      if (isHowToReportOpen) {
+        touchStartX = null;
+        return;
+      }
+      
       const dx = e.changedTouches[0].clientX - touchStartX;
 
       if (dx < -100 && !isPanelOpen) {
