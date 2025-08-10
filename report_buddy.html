@@ -455,14 +455,19 @@
     async function capturePhoto(){
       const captureButton = document.getElementById('captureBtn');
       const eventSelector = document.getElementById('eventSelector');
+      const howToReportBtn = document.getElementById('howToReportBtn');
       const eventType = document.getElementById('eventType');
       
       // Hide elements before capture
       captureButton.style.opacity = '0';
+      howToReportBtn.style.display = 'none';
       
       // Hide "Select Report Type" option if it's selected
       const originalDisplay = eventSelector.style.display;
       if (eventType.value === '') {
+        eventSelector.style.display = 'none';
+      } else {
+        // Also hide the selector even if a type is selected
         eventSelector.style.display = 'none';
       }
       
@@ -479,6 +484,7 @@
       // Restore hidden elements
       captureButton.style.opacity = '1';
       eventSelector.style.display = originalDisplay;
+      howToReportBtn.style.display = 'block';
     }
 
     async function fetchCountyName(url){
