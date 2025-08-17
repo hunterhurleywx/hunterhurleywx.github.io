@@ -620,6 +620,7 @@
       // Hide elements before capture
       captureButton.style.opacity = '0';
       howToReportBtn.style.display = 'none';
+      document.getElementById('modeSwitchBtn').style.display = 'none';
       
       // Store original display states
       const originalDisplay = eventSelector.style.display;
@@ -652,6 +653,7 @@
       captureButton.style.opacity = '1';
       eventSelector.style.display = originalDisplay;
       howToReportBtn.style.display = 'block';
+      document.getElementById('modeSwitchBtn').style.display = 'block';
       customHailInput.style.display = originalHailDisplay;
       damageInput.style.display = originalDamageDisplay;
     }
@@ -1191,6 +1193,11 @@
     async function startRecording() {
       const eventType = document.getElementById('eventType');
       const notification = document.getElementById('notification');
+      const eventSelector = document.getElementById('eventSelector');
+      const customHailInput = document.getElementById('customHailInput');
+      const damageInput = document.getElementById('damageInput');
+      const howToReportBtn = document.getElementById('howToReportBtn');
+      const modeSwitchBtn = document.getElementById('modeSwitchBtn');
       
       // Check if report type is selected
       if (!eventType.value) {
@@ -1210,18 +1217,50 @@
         return;
       }
       
-      // Hide notification before recording
+      // Hide notification and UI elements before recording
       notification.style.display = 'none';
       
+      // Store original display states
+      const originalEventDisplay = eventSelector.style.display;
+      const originalHailDisplay = customHailInput.style.display;
+      const originalDamageDisplay = damageInput.style.display;
+      
+      // Hide UI elements for clean recording
+      if (eventType.value === '') {
+        eventSelector.style.display = 'none';
+      } else {
+        eventSelector.style.display = 'none';
+      }
+      customHailInput.style.display = 'none';
+      damageInput.style.display = 'none';
+      howToReportBtn.style.display = 'none';
+      modeSwitchBtn.style.display = 'none';
+      document.getElementById('recordBtn').style.opacity = '0.3';
+      
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: {
-            facingMode: { ideal: 'environment' },
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
-          },
-          audio: true 
-        });
+        // Try to get display media (screen recording) first
+        let stream;
+        try {
+          // Request display media (will capture the full screen including map and details)
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: {
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+              frameRate: { ideal: 30 }
+            },
+            audio: false
+          });
+        } catch (displayError) {
+          // Fallback to camera if display media is not available
+          stream = await navigator.mediaDevices.getUserMedia({ 
+            video: {
+              facingMode: { ideal: 'environment' },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
+            },
+            audio: true 
+          });
+        }
         
         recordedChunks = [];
         mediaRecorder = new MediaRecorder(stream, {
@@ -1249,6 +1288,14 @@
           
           // Stop all tracks
           stream.getTracks().forEach(track => track.stop());
+          
+          // Restore UI elements
+          eventSelector.style.display = originalEventDisplay;
+          customHailInput.style.display = originalHailDisplay;
+          damageInput.style.display = originalDamageDisplay;
+          howToReportBtn.style.display = 'block';
+          modeSwitchBtn.style.display = 'block';
+          document.getElementById('recordBtn').style.opacity = '1';
         };
         
         mediaRecorder.start();
@@ -1262,6 +1309,14 @@
         recordingTimer = setInterval(updateRecordingTimer, 100);
         
       } catch (error) {
+        // Restore UI elements on error
+        eventSelector.style.display = originalEventDisplay;
+        customHailInput.style.display = originalHailDisplay;
+        damageInput.style.display = originalDamageDisplay;
+        howToReportBtn.style.display = 'block';
+        modeSwitchBtn.style.display = 'block';
+        document.getElementById('recordBtn').style.opacity = '1';
+        
         alert('Failed to start recording: ' + error.message);
       }
     }
