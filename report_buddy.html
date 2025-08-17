@@ -492,6 +492,7 @@
       const eventType = document.getElementById('eventType');
       const customHailInput = document.getElementById('customHailInput');
       const damageInput = document.getElementById('damageInput');
+      const notification = document.getElementById('notification');
       
       // Check if report type is selected
       if (!eventType.value) {
@@ -510,6 +511,9 @@
         showNotification('Please describe the damage first!');
         return;
       }
+      
+      // Make absolutely sure notification is hidden before capture
+      notification.style.display = 'none';
       
       // Hide elements before capture
       captureButton.style.opacity = '0';
