@@ -102,6 +102,24 @@
       text-align: center;
     }
 
+    #modeSwitchBtn {
+      position: fixed;
+      bottom: 60px;
+      left: 20px;
+      padding: 0.5rem 1rem;
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 25;
+    }
+    #modeSwitchBtn:active {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
     #howToReportBtn {
       position: fixed;
       bottom: 20px;
@@ -118,6 +136,79 @@
     }
     #howToReportBtn:active {
       background: rgba(255, 255, 255, 0.3);
+    }
+
+    #recordBtn {
+      position: absolute;
+      bottom: 8%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 50px;
+      border: 4px solid #fff;
+      border-radius: 50%;
+      background: rgba(255, 0, 0, 0.7);
+      z-index: 25;
+      cursor: pointer;
+      display: none;
+    }
+    #recordBtn.recording {
+      background: rgba(255, 0, 0, 0.9);
+      animation: pulse 1s infinite;
+    }
+    #recordBtn:active {
+      background: rgba(255, 0, 0, 0.9);
+    }
+
+    @keyframes pulse {
+      0% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.1); }
+      100% { transform: translateX(-50%) scale(1); }
+    }
+
+    #recordTimer {
+      position: absolute;
+      bottom: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 0, 0, 0.8);
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      display: none;
+      z-index: 25;
+    }
+
+    #videoPreview {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 40;
+    }
+    #videoPreview video {
+      max-width: 100%;
+      max-height: 80%;
+      border: 4px solid #fff;
+      border-radius: 8px;
+    }
+    #videoPreview .button-container {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    #videoPreview button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
     }
 
     #howToReportPanel {
@@ -271,6 +362,9 @@
     </div>
 
     <button id="captureBtn" title="Capture Screen"></button>
+    <button id="recordBtn" title="Record Video"></button>
+    <div id="recordTimer">00:00</div>
+    <button id="modeSwitchBtn">Switch to Record</button>
     <button id="howToReportBtn">How to Report</button>
 
     <div id="notification">Please select a report type first!</div>
@@ -280,6 +374,14 @@
       <div class="button-container">
         <button id="downloadSnap">Download</button>
         <button id="closeSnap">Close</button>
+      </div>
+    </div>
+
+    <div id="videoPreview">
+      <video id="recordedVideo" controls></video>
+      <div class="button-container">
+        <button id="downloadVideo">Download</button>
+        <button id="closeVideo">Close</button>
       </div>
     </div>
 
@@ -1039,6 +1141,175 @@
       }
     }
 
+    // Video Recording Variables
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let recordingTimer = null;
+    let recordingStartTime = null;
+    let isRecordMode = false;
+    const MAX_RECORDING_TIME = 30000; // 30 seconds in milliseconds
+
+    function switchMode() {
+      const modeSwitchBtn = document.getElementById('modeSwitchBtn');
+      const captureBtn = document.getElementById('captureBtn');
+      const recordBtn = document.getElementById('recordBtn');
+      
+      isRecordMode = !isRecordMode;
+      
+      if (isRecordMode) {
+        modeSwitchBtn.textContent = 'Switch to Photo';
+        captureBtn.style.display = 'none';
+        recordBtn.style.display = 'block';
+      } else {
+        modeSwitchBtn.textContent = 'Switch to Record';
+        captureBtn.style.display = 'block';
+        recordBtn.style.display = 'none';
+        // Stop recording if switching modes
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+          stopRecording();
+        }
+      }
+    }
+
+    function updateRecordingTimer() {
+      if (!recordingStartTime) return;
+      
+      const elapsed = Date.now() - recordingStartTime;
+      const seconds = Math.floor(elapsed / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const displaySeconds = seconds % 60;
+      
+      document.getElementById('recordTimer').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${displaySeconds.toString().padStart(2, '0')}`;
+      
+      // Auto-stop at 30 seconds
+      if (elapsed >= MAX_RECORDING_TIME) {
+        stopRecording();
+      }
+    }
+
+    async function startRecording() {
+      const eventType = document.getElementById('eventType');
+      const notification = document.getElementById('notification');
+      
+      // Check if report type is selected
+      if (!eventType.value) {
+        showNotification('Please select a report type first!');
+        return;
+      }
+      
+      // Check if hail size is selected when report type is Hail
+      if (eventType.value === 'Hail' && !document.getElementById('hailSize').value) {
+        showNotification('Please select hail size first!');
+        return;
+      }
+      
+      // Check if damage description is entered when report type is Damage
+      if (eventType.value === 'Damage' && !document.getElementById('damageDescription').value) {
+        showNotification('Please describe the damage first!');
+        return;
+      }
+      
+      // Hide notification before recording
+      notification.style.display = 'none';
+      
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: true 
+        });
+        
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream, {
+          mimeType: 'video/webm;codecs=vp9,opus'
+        });
+        
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
+        
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          
+          // Show video preview
+          const videoPreview = document.getElementById('videoPreview');
+          const recordedVideo = document.getElementById('recordedVideo');
+          recordedVideo.src = url;
+          videoPreview.style.display = 'flex';
+          
+          // Store blob for download
+          recordedVideo.dataset.blob = url;
+          
+          // Stop all tracks
+          stream.getTracks().forEach(track => track.stop());
+        };
+        
+        mediaRecorder.start();
+        recordingStartTime = Date.now();
+        
+        // Update UI
+        document.getElementById('recordBtn').classList.add('recording');
+        document.getElementById('recordTimer').style.display = 'block';
+        
+        // Start timer
+        recordingTimer = setInterval(updateRecordingTimer, 100);
+        
+      } catch (error) {
+        alert('Failed to start recording: ' + error.message);
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        
+        // Clear timer
+        if (recordingTimer) {
+          clearInterval(recordingTimer);
+          recordingTimer = null;
+        }
+        
+        // Reset UI
+        document.getElementById('recordBtn').classList.remove('recording');
+        document.getElementById('recordTimer').style.display = 'none';
+        document.getElementById('recordTimer').textContent = '00:00';
+        recordingStartTime = null;
+      }
+    }
+
+    function toggleRecording() {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    }
+
+    function downloadVideo() {
+      const recordedVideo = document.getElementById('recordedVideo');
+      const url = recordedVideo.dataset.blob;
+      
+      if (url) {
+        const link = document.createElement('a');
+        const now = new Date();
+        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(now.getUTCDate()).padStart(2, '0');
+        const year = now.getUTCFullYear();
+        const hours = String(now.getUTCHours()).padStart(2, '0');
+        const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+        link.download = `report-buddy-video-${month}_${day}_${year}_${hours}${minutes}z.webm`;
+        link.href = url;
+        link.click();
+      }
+    }
+
     window.addEventListener('load',()=>{
       startCamera();
       initMap();
@@ -1049,6 +1320,20 @@
       document.getElementById('zoomIn').addEventListener('click',zoomIn);
       document.getElementById('zoomOut').addEventListener('click',zoomOut);
       document.getElementById('howToReportBtn').addEventListener('click',openHowToReport);
+      
+      // Video recording event listeners
+      document.getElementById('modeSwitchBtn').addEventListener('click', switchMode);
+      document.getElementById('recordBtn').addEventListener('click', toggleRecording);
+      document.getElementById('closeVideo').addEventListener('click', () => {
+        document.getElementById('videoPreview').style.display = 'none';
+        // Clean up the blob URL
+        const recordedVideo = document.getElementById('recordedVideo');
+        if (recordedVideo.dataset.blob) {
+          URL.revokeObjectURL(recordedVideo.dataset.blob);
+          recordedVideo.dataset.blob = '';
+        }
+      });
+      document.getElementById('downloadVideo').addEventListener('click', downloadVideo);
     });
   </script>
 </body>
