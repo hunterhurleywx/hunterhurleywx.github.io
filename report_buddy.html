@@ -104,20 +104,34 @@
 
     #modeSwitchBtn {
       position: fixed;
-      bottom: 60px;
+      bottom: 65px;
       left: 20px;
-      padding: 0.5rem 1rem;
-      background: rgba(0, 0, 0, 0.6);
+      padding: 0.6rem 1.2rem;
+      background: linear-gradient(135deg, rgba(255, 0, 0, 0.2), rgba(0, 0, 0, 0.7));
       color: #fff;
-      border: 2px solid #fff;
-      border-radius: 8px;
-      font-size: 0.9rem;
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      border-radius: 25px;
+      font-size: 0.95rem;
       font-weight: bold;
       cursor: pointer;
       z-index: 25;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+    #modeSwitchBtn:hover {
+      background: linear-gradient(135deg, rgba(255, 0, 0, 0.4), rgba(0, 0, 0, 0.8));
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
     }
     #modeSwitchBtn:active {
-      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+    #modeSwitchBtn.record-mode {
+      background: linear-gradient(135deg, rgba(0, 150, 255, 0.2), rgba(0, 0, 0, 0.7));
+    }
+    #modeSwitchBtn.record-mode:hover {
+      background: linear-gradient(135deg, rgba(0, 150, 255, 0.4), rgba(0, 0, 0, 0.8));
     }
 
     #howToReportBtn {
@@ -143,42 +157,106 @@
       bottom: 8%;
       left: 50%;
       transform: translateX(-50%);
-      width: 50px;
-      height: 50px;
-      border: 4px solid #fff;
+      width: 60px;
+      height: 60px;
+      border: 3px solid rgba(255, 255, 255, 0.9);
       border-radius: 50%;
-      background: rgba(255, 0, 0, 0.7);
+      background: radial-gradient(circle, rgba(255, 0, 0, 0.8), rgba(200, 0, 0, 0.9));
       z-index: 25;
       cursor: pointer;
       display: none;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    #recordBtn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+    #recordBtn:hover {
+      transform: translateX(-50%) scale(1.05);
+      box-shadow: 0 0 30px rgba(255, 0, 0, 0.7);
     }
     #recordBtn.recording {
-      background: rgba(255, 0, 0, 0.9);
-      animation: pulse 1s infinite;
+      animation: recordPulse 1.5s infinite;
+    }
+    #recordBtn.recording::before {
+      width: 15px;
+      height: 15px;
+      border-radius: 3px;
+      background: #fff;
     }
     #recordBtn:active {
-      background: rgba(255, 0, 0, 0.9);
+      transform: translateX(-50%) scale(0.95);
     }
 
-    @keyframes pulse {
-      0% { transform: translateX(-50%) scale(1); }
-      50% { transform: translateX(-50%) scale(1.1); }
-      100% { transform: translateX(-50%) scale(1); }
+    @keyframes recordPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7),
+                    0 0 20px rgba(255, 0, 0, 0.5);
+      }
+      50% {
+        box-shadow: 0 0 0 20px rgba(255, 0, 0, 0),
+                    0 0 30px rgba(255, 0, 0, 0.7);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0),
+                    0 0 20px rgba(255, 0, 0, 0.5);
+      }
     }
 
     #recordTimer {
       position: absolute;
-      bottom: 15%;
+      bottom: 16%;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(255, 0, 0, 0.8);
+      background: linear-gradient(135deg, rgba(255, 0, 0, 0.9), rgba(150, 0, 0, 0.9));
       color: #fff;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 1.2rem;
+      padding: 0.6rem 1.5rem;
+      border-radius: 25px;
+      font-size: 1.3rem;
       font-weight: bold;
       display: none;
       z-index: 25;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+      animation: timerGlow 2s ease-in-out infinite;
+    }
+    #recordTimer::before {
+      content: '● REC';
+      color: #ff0000;
+      margin-right: 10px;
+      animation: blink 1s infinite;
+      font-size: 0.9rem;
+      vertical-align: middle;
+    }
+
+    @keyframes timerGlow {
+      0%, 100% {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      }
+      50% {
+        box-shadow: 0 4px 20px rgba(255, 0, 0, 0.6);
+      }
+    }
+
+    @keyframes blink {
+      0%, 50% {
+        opacity: 1;
+      }
+      51%, 100% {
+        opacity: 0.3;
+      }
     }
 
     #videoPreview {
@@ -364,7 +442,7 @@
     <button id="captureBtn" title="Capture Screen"></button>
     <button id="recordBtn" title="Record Video"></button>
     <div id="recordTimer">00:00</div>
-    <button id="modeSwitchBtn">Switch to Record</button>
+    <button id="modeSwitchBtn">📷 Switch to Record</button>
     <button id="howToReportBtn">How to Report</button>
 
     <div id="notification">Please select a report type first!</div>
@@ -1159,11 +1237,13 @@
       isRecordMode = !isRecordMode;
       
       if (isRecordMode) {
-        modeSwitchBtn.textContent = 'Switch to Photo';
+        modeSwitchBtn.textContent = '📹 Switch to Photo';
+        modeSwitchBtn.classList.add('record-mode');
         captureBtn.style.display = 'none';
         recordBtn.style.display = 'block';
       } else {
-        modeSwitchBtn.textContent = 'Switch to Record';
+        modeSwitchBtn.textContent = '📷 Switch to Record';
+        modeSwitchBtn.classList.remove('record-mode');
         captureBtn.style.display = 'block';
         recordBtn.style.display = 'none';
         // Stop recording if switching modes
