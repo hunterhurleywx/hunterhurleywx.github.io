@@ -106,32 +106,18 @@
       position: fixed;
       bottom: 65px;
       left: 20px;
-      padding: 0.6rem 1.2rem;
-      background: rgba(0, 0, 0, 0.7);
+      padding: 0.5rem 1rem;
+      background: rgba(0, 0, 0, 0.6);
       color: #fff;
-      border: 2px solid rgba(255, 255, 255, 0.9);
-      border-radius: 25px;
-      font-size: 0.95rem;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      font-size: 0.9rem;
       font-weight: bold;
       cursor: pointer;
       z-index: 25;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    }
-    #modeSwitchBtn:hover {
-      background: rgba(0, 0, 0, 0.8);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
     }
     #modeSwitchBtn:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-    }
-    #modeSwitchBtn.record-mode {
-      background: rgba(0, 0, 0, 0.7);
-    }
-    #modeSwitchBtn.record-mode:hover {
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(255, 255, 255, 0.3);
     }
 
     #howToReportBtn {
@@ -161,11 +147,10 @@
       height: 50px;
       border: 4px solid #fff;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 0, 0, 0.8), rgba(200, 0, 0, 0.9));
+      background: #fff;
       z-index: 25;
       cursor: pointer;
       display: none;
-      box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
       transition: all 0.2s ease;
     }
     #recordBtn::before {
@@ -176,22 +161,21 @@
       transform: translate(-50%, -50%);
       width: 20px;
       height: 20px;
-      background: #fff;
+      background: #ff0000;
       border-radius: 50%;
       transition: all 0.3s ease;
     }
     #recordBtn:hover {
       transform: translateX(-50%) scale(1.05);
-      box-shadow: 0 0 30px rgba(255, 0, 0, 0.7);
     }
     #recordBtn.recording {
       animation: recordPulse 1.5s infinite;
     }
     #recordBtn.recording::before {
-      width: 15px;
-      height: 15px;
+      width: 25px;
+      height: 25px;
       border-radius: 3px;
-      background: #fff;
+      background: #ff0000;
     }
     #recordBtn:active {
       transform: translateX(-50%) scale(0.95);
