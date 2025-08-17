@@ -192,6 +192,29 @@
       cursor: pointer;
     }
 
+    #notification {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 0, 0, 0.9);
+      color: #fff;
+      padding: 1.5rem 2rem;
+      border-radius: 15px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: center;
+      z-index: 200;
+      display: none;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+
   </style>
 </head>
 <body>
@@ -251,6 +274,8 @@
 
     <button id="captureBtn" title="Capture Screen"></button>
     <button id="howToReportBtn">How to Report</button>
+
+    <div id="notification">Please select a report type first!</div>
 
     <div id="snapshot">
       <img id="snapshotImg" alt="Captured"/>
@@ -452,6 +477,16 @@
       setZoom(newZoom);
     }
 
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.style.display = 'block';
+      
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 3000);
+    }
+
     async function capturePhoto(){
       const captureButton = document.getElementById('captureBtn');
       const eventSelector = document.getElementById('eventSelector');
@@ -459,6 +494,24 @@
       const eventType = document.getElementById('eventType');
       const customHailInput = document.getElementById('customHailInput');
       const damageInput = document.getElementById('damageInput');
+      
+      // Check if report type is selected
+      if (!eventType.value) {
+        showNotification('Please select a report type first!');
+        return;
+      }
+      
+      // Check if hail size is selected when report type is Hail
+      if (eventType.value === 'Hail' && !document.getElementById('hailSize').value) {
+        showNotification('Please select hail size first!');
+        return;
+      }
+      
+      // Check if damage description is entered when report type is Damage
+      if (eventType.value === 'Damage' && !document.getElementById('damageDescription').value) {
+        showNotification('Please describe the damage first!');
+        return;
+      }
       
       // Hide elements before capture
       captureButton.style.opacity = '0';
