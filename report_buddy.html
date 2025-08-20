@@ -65,7 +65,7 @@
       left: -100%;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.95);
+      background: #000;
       color: #fff;
       z-index: 100;
       display: flex;
@@ -1087,7 +1087,7 @@
 
 
       // Init or update map view
-      initLocationMap(tweetInfo.lat, tweetInfo.lon);
+      initLocationMap(parseFloat(tweetInfo.lat), parseFloat(tweetInfo.lon));
     }
 
 
@@ -1144,9 +1144,16 @@
     let locationMap;
     let countyLayer=null;
 
+    let locationMarker = null;
+    
     function initLocationMap(lat = 38.0, lon = -97.0) {
       if (locationMap) {
         locationMap.setView([lat, lon], 9);
+        if (locationMarker) {
+          locationMarker.setLatLng([lat, lon]);
+        } else {
+          locationMarker = L.marker([lat, lon]).addTo(locationMap);
+        }
         return;
       }
 
@@ -1156,7 +1163,7 @@
         minZoom: 4
       }).addTo(locationMap);
       locationMap.setView([lat, lon], 8);
-      L.marker([lat, lon]).addTo(locationMap);
+      locationMarker = L.marker([lat, lon]).addTo(locationMap);
 
       fetch("https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json")
         .then(response => {
