@@ -828,54 +828,70 @@
     function getWFOHANDLE(WFO){
       console.log('getting wfo X handle');
       const wfo_handles= {
-
         "ABQ": "NWSAlbuquerque",
         "ABR": "NWSAberdeen",
         "AFC": "NWSAnchorage",
+        "AFG": "NWSFairbanks",
+        "AJK": "NWSJuneau",
+        "AKQ": "NWSWakefieldVA",
+        "ALY": "NWSAlbany",
         "AMA": "NWSAmarillo",
         "APX": "NWSGaylord",
         "ARX": "NWSLaCrosse",
         "BGM": "NWSBinghamton",
         "BIS": "NWSBismarck",
+        "BMX": "NWSBirmingham",
         "BOI": "NWSBoise",
+        "BOU": "NWSBoulder",
         "BOX": "NWSBoston",
+        "BRO": "NWSBrownsville",
         "BTV": "NWSBurlington",
-        "BUF": "NWSBuffalo",
+        "BUF": "NWSBUFFALO",
         "BYZ": "NWSBillings",
         "CAE": "NWSColumbia",
         "CAR": "NWSCaribou",
         "CHS": "NWSCharlestonSC",
-        "CLE": "NWSCleveland",
+        "CLE": "NWSCLE",
         "CRP": "NWSCorpus",
         "CTP": "NWSStateCollege",
+        "CYS": "NWSCheyenne",
         "DDC": "NWSDodgeCity",
         "DLH": "NWSDuluth",
         "DMX": "NWSDesMoines",
         "DTX": "NWSDetroit",
-        "DVN": "NWSDavenport",
+        "DVN": "NWSQuadCities",
         "EAX": "NWSKansasCity",
+        "EKA": "NWSEureka",
         "EPZ": "NWSElPaso",
         "EWX": "NWSSanAntonio",
+        "FFC": "NWSAtlanta",
         "FGF": "NWSGrandForks",
         "FGZ": "NWSFlagstaff",
-        "FSD": "NWSFSiouxFalls",
+        "FSD": "NWSSiouxFalls",
         "FWD": "NWSFortWorth",
+        "GGW": "NWSGlasgow",
         "GID": "NWSHastings",
+        "GJT": "NWSGJT",
         "GLD": "NWSGoodland",
         "GRB": "NWSGreenBay",
         "GRR": "NWSGrandRapids",
         "GSP": "NWSGSP",
         "GUM": "NWSGuam",
+        "GYX": "NWSGray",
+        "HFO": "NWSHonolulu",
         "HGX": "NWSHouston",
         "HNX": "NWSHanford",
         "HUN": "NWSHuntsville",
         "ICT": "NWSWichita",
         "ILM": "NWSWilmingtonNC",
         "ILN": "NWSILN",
+        "ILX": "NWSLincolnIL",
         "IND": "NWSIndianapolis",
+        "IWX": "NWSIWX",
         "JAN": "NWSJacksonMS",
         "JAX": "NWSJacksonville",
         "JKL": "NWSJacksonKY",
+        "KEY": "NWSKeyWest",
         "LBF": "NWSNorthPlatte",
         "LCH": "NWSLakeCharles",
         "LIX": "NWSNewOrleans",
@@ -883,12 +899,14 @@
         "LMK": "NWSLouisville",
         "LOT": "NWSChicago",
         "LOX": "NWSLosAngeles",
+        "LSX": "NWSStLouis",
         "LUB": "NWSLubbock",
         "LWX": "NWS_BaltWash",
         "LZK": "NWSLittleRock",
         "MAF": "NWSMidland",
         "MEG": "NWSMemphis",
         "MFL": "NWSMiami",
+        "MFR": "NWSMedford",
         "MHX": "NWSMoreheadCity",
         "MKX": "NWSMilwaukee",
         "MLB": "NWSMelbourne",
@@ -897,9 +915,14 @@
         "MQT": "NWSMarquette",
         "MRX": "NWSMorristown",
         "MSO": "NWSMissoula",
-        "MTR": "NWSSanFrancisco",
+        "MTR": "NWSBayArea",
+        "OAX": "NWSOmaha",
+        "OHX": "NWSNashville",
+        "OKX": "NWSNewYorkNY",
+        "OTX": "NWSSpokane",
         "OUN": "NWSNorman",
         "PAH": "NWSPaducah",
+        "PPG": "NWSPagoPago",
         "PBZ": "NWSPittsburgh",
         "PDT": "NWSPendleton",
         "PHI": "NWS_MountHolly",
@@ -912,9 +935,11 @@
         "RIW": "NWSRiverton",
         "RLX": "NWSCharlestonWV",
         "RNK": "NWSBlacksburg",
-        "SGF": "NWSpringfield",
+        "SEW": "NWSSeattle",
+        "SGF": "NWSSpringfield",
         "SGX": "NWSSanDiego",
         "SHV": "NWSShreveport",
+        "SJT": "NWSSanAngelo",
         "SJU": "NWSSanJuan",
         "SLC": "NWSSaltLakeCity",
         "STO": "NWSSacramento",
@@ -923,15 +948,10 @@
         "TFX": "NWSGreatFalls",
         "TOP": "NWSTopeka",
         "TSA": "NWSTulsa",
+        "TWC": "NWSTucson",
+        "UNR": "NWSRapidCity",
         "VEF": "NWSVegas",
-        "WFO": "NWS",        // Fallback
-        "AKQ": "NWSWakefieldVA",
-        "GYX": "NWSGray",
-        "OKX": "NWSNewYorkNY",
-        "SEW": "NWSSeattle",
-        "SJT": "NWSSanAngelo",
-        "OTX": "NWSSpokane",
-        "GJT": "NWSGrandJunction"
+        "WFO": "NWS"        // Fallback
       }
 
 
@@ -1011,59 +1031,129 @@
     function openLocationPanel() {
 
     const wfo_phones = {
-      "ABQ": "505-325-3816",
-      "AMA": "806-354-2278",
-      "BMX": "205-664-3010",
-      "HUN": "256-890-8503",
-      "MOB": "251-633-6443",
-      "LZK": "501-834-0308",
-      "JAX": "904-741-4370",
-      "KEY": "305-295-1316",
-      "MLB": "321-255-2900",
-      "MFL": "305-229-4550",
-      "TAE": "850-942-8851",
-      "TBW": "813-645-2506",
-      "BMX": "205-664-3010",
-      "LCH": "337-439-0000",
-      "LIX": "504-522-7330",
-      "SHV": "318-635-7575",
-      "JAN": "601-936-2189",
-      "OUN": "405-325-3816",
-      "TSA": "918-743-3311",
-      "SJU": "787-253-0855",
-      "MRX": "423-586-3771",
-      "MEM": "901-544-0408",
-      "OHX": "615-754-4633",
-      "BRO": "956-504-1432",
-      "CRP": "361-289-0753",
-      "FWD": "817-429-2631",
-      "EPZ": "505-589-4088",
-      "HGX": "281-337-5074",
-      "LUB": "806-748-1071",
-      "MAF": "432-563-9292",
-      "SJT": "325-949-8586",
-      "FGZ": "928-774-3301",
-      "PSR": "602-275-0073",
-      "TWC": "520-881-3333",
-      "EKA": "707-443-7062",
-      "LOX": "805-988-6610",
-      "STO": "916-979-3051",
-      "SGX": "858-675-8706",
-      "BOI": "208-342-6569",
-      "PIH": "208-233-0137",
-      "BYZ": "406-652-1916",
-      "GGW": "406-228-9625",
-      "TFX": "406-453-5469",
-      "MSO": "406-721-3939",
-      "LKN": "775-738-3018",
-      "VEF": "702-263-9744",
-      "REV": "775-673-8130",
-      "MFR": "541-779-5990",
-      "PDT": "541-276-0103",
-      "PQR": "503-261-9246",
-      "SLC": "801-524-3057",
-      "SEW": "206-526-6087",
-      "OTX": "360-357-5291" /* approximate */
+      "ABQ": "(505) 243-0702",
+      "ABR": "(605) 225-0519",
+      "AFC": "(907) 266-5105",
+      "AFG": "(907) 458-3700",
+      "AJK": "(907) 790-6800",
+      "AKQ": "(757) 899-4200",
+      "ALY": "(518) 626-7570",
+      "AMA": "(806) 335-1121",
+      "APX": "(989) 731-3384",
+      "ARX": "(608) 784-7294",
+      "BGM": "(607) 729-1597",
+      "BIS": "(701) 250-4224",
+      "BMX": "(205) 664-3010",
+      "BOI": "(208) 334-9860",
+      "BOU": "(303) 494-3210",
+      "BOX": "(508) 622-3250",
+      "BRO": "(956) 504-1432",
+      "BTV": "(802) 862-2475",
+      "BUF": "(716) 565-0204",
+      "BYZ": "(406) 652-0851",
+      "CAE": "(803) 822-8135",
+      "CAR": "(207) 492-0182",
+      "CHS": "(843) 747-5860",
+      "CLE": "(216) 416-2900",
+      "CRP": "(361) 289-0959",
+      "CTP": "(814) 954-6440",
+      "CYS": "(307) 772-2468",
+      "DDC": "(620) 225-6514",
+      "DLH": "(218) 729-6697",
+      "DMX": "(515) 270-2614",
+      "DTX": "(248) 620-9804",
+      "DVN": "(563) 386-3976",
+      "EAX": "(816) 540-6132",
+      "EKA": "(707) 443-6484",
+      "EPZ": "(575) 589-4088",
+      "EWX": "(830) 629-0130",
+      "FFC": "(770) 486-1133",
+      "FGF": "(701) 772-0720",
+      "FGZ": "(928) 556-9161",
+      "FSD": "(605) 330-4247",
+      "FWD": "(817) 429-2631",
+      "GGW": "(406) 228-4042",
+      "GID": "(402) 462-4287",
+      "GJT": "(970) 243-7007",
+      "GLD": "(785) 899-7119",
+      "GRB": "(920) 494-2363",
+      "GRR": "(616) 949-0643",
+      "GSP": "(864) 848-3859",
+      "GUM": "(671) 472-0900",
+      "GYX": "(207) 688-3216",
+      "HFO": "(808) 973-5286",
+      "HGX": "(281) 337-5074",
+      "HNX": "(559) 584-3752",
+      "HUN": "(256) 890-8503",
+      "ICT": "(316) 942-3102",
+      "ILM": "(910) 762-4289",
+      "ILN": "(937) 383-0031",
+      "ILX": "(217) 732-7321",
+      "IND": "(317) 856-0664",
+      "IWX": "(574) 834-1104",
+      "JAN": "(601) 936-2189",
+      "JAX": "(904) 741-4370",
+      "JKL": "(606) 666-8000",
+      "KEY": "(305) 295-1316",
+      "LBF": "(308) 532-4936",
+      "LCH": "(337) 477-5285",
+      "LIX": "(504) 522-7330",
+      "LKN": "(775) 778-6716",
+      "LMK": "(502) 969-8842",
+      "LOT": "(815) 834-1435",
+      "LOX": "(805) 988-6610",
+      "LSX": "(636) 441-8467",
+      "LUB": "(806) 745-4260",
+      "LWX": "(571) 888-3500",
+      "LZK": "(501) 834-0308",
+      "MAF": "(432) 563-5006",
+      "MEG": "(901) 544-0399",
+      "MFL": "(305) 229-4522",
+      "MFR": "(541) 773-1067",
+      "MHX": "(252) 223-5737",
+      "MKX": "(262) 965-2074",
+      "MLB": "(321) 255-0212",
+      "MOB": "(251) 633-6443",
+      "MPX": "(952) 361-6670",
+      "MQT": "(906) 475-5212",
+      "MRX": "(423) 586-3771",
+      "MSO": "(406) 329-4840",
+      "MTR": "(831) 656-1725",
+      "OAX": "(402) 359-5166",
+      "OHX": "(615) 754-8500",
+      "OKX": "(631) 924-0517",
+      "OTX": "(509) 244-0110",
+      "OUN": "(405) 325-3816",
+      "PAH": "(270) 744-6440",
+      "PPG": "(684) 699-9130",
+      "PBZ": "(412) 262-2170",
+      "PDT": "(541) 276-4493",
+      "PHI": "(609) 261-6600",
+      "PIH": "(208) 233-0834",
+      "PQR": "(503) 261-9246",
+      "PSR": "(602) 275-0073",
+      "PUB": "(719) 948-9429",
+      "RAH": "(919) 326-1042",
+      "REV": "(775) 673-8100",
+      "RIW": "(307) 857-3898",
+      "RLX": "(304) 356-5885",
+      "RNK": "(540) 553-8900",
+      "SEW": "(206) 526-6087",
+      "SGF": "(417) 863-8028",
+      "SGX": "(858) 675-8700",
+      "SHV": "(318) 631-3669",
+      "SJT": "(325) 944-9445",
+      "SJU": "(787) 253-4586",
+      "SLC": "(801) 524-5133",
+      "STO": "(916) 979-3051",
+      "TAE": "(850) 942-8833",
+      "TBW": "(813) 645-2323",
+      "TFX": "(406) 453-2081",
+      "TOP": "(785) 234-2592",
+      "TSA": "(918) 838-7838",
+      "TWC": "(520) 670-6526",
+      "UNR": "(605) 341-9271",
+      "VEF": "(702) 263-9744"
     }
 
     const wfo_phone_number=wfo_phones[tweetInfo.wfo];
@@ -1344,9 +1434,16 @@
         }
         
         recordedChunks = [];
-        mediaRecorder = new MediaRecorder(stream, {
-          mimeType: 'video/webm;codecs=vp9,opus'
-        });
+        
+        // Try MP4 first for Twitter compatibility, fallback to WebM
+        let mimeType = 'video/mp4;codecs=h264,aac';
+        let fileExtension = 'mp4';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'video/webm;codecs=vp9,opus';
+          fileExtension = 'webm';
+        }
+        
+        mediaRecorder = new MediaRecorder(stream, { mimeType });
         
         mediaRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
@@ -1355,7 +1452,8 @@
         };
         
         mediaRecorder.onstop = () => {
-          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const blobType = mimeType.split(';')[0]; // Get just the MIME type without codecs
+          const blob = new Blob(recordedChunks, { type: blobType });
           const url = URL.createObjectURL(blob);
           
           // Show video preview
@@ -1366,6 +1464,7 @@
           
           // Store blob for download
           recordedVideo.dataset.blob = url;
+          recordedVideo.dataset.fileExtension = fileExtension;
           
           // Stop all tracks
           stream.getTracks().forEach(track => track.stop());
@@ -1431,6 +1530,7 @@
     function downloadVideo() {
       const recordedVideo = document.getElementById('recordedVideo');
       const url = recordedVideo.dataset.blob;
+      const fileExtension = recordedVideo.dataset.fileExtension || 'mp4';
       
       if (url) {
         const link = document.createElement('a');
@@ -1440,7 +1540,7 @@
         const year = now.getUTCFullYear();
         const hours = String(now.getUTCHours()).padStart(2, '0');
         const minutes = String(now.getUTCMinutes()).padStart(2, '0');
-        link.download = `report-buddy-video-${month}_${day}_${year}_${hours}${minutes}z.webm`;
+        link.download = `report-buddy-video-${month}_${day}_${year}_${hours}${minutes}z.${fileExtension}`;
         link.href = url;
         link.click();
       }
