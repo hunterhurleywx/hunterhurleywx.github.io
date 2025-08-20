@@ -65,7 +65,7 @@
       left: -100%;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.95);
       color: #fff;
       z-index: 100;
       display: flex;
@@ -83,23 +83,26 @@
       height: 100%;
       display: flex;
       flex-direction: column;
+      max-width: 100vw;
+      max-height: 100vh;
     }
 
     #locationMap {
-      height: 42%;
+      height: 40%;
       width: 100%;
       background: #222;
+      flex-shrink: 0;
     }
 
     #locationContent {
       flex: 1;
-      padding: 0.5rem;
-      overflow-y: visible;
+      padding: 1.5rem 1rem;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
       text-align: center;
+      max-height: 60%;
     }
 
     #modeSwitchBtn {
@@ -452,16 +455,30 @@
   <div id="locationMapContainer">
     <div id="locationMap"></div>
     <div id="locationContent">
-      <h3>Current Location Details</h3>
-      <p>Lat: <span id="locLat">--</span></p>
-      <p>Lon: <span id="locLon">--</span></p>
-      <p>City: <span id="locCity">--</span></p>
-      <p>State: <span id="locState">--</span></p>
-      <p>County: <span id="locCounty">--</span></p>
-      <p>WFO: <span id="locWFO">--</span></p>
-      <p>WFO X Handle: <span id="locWFOHandle">--</span></p>
-      <p>WFO Phone (Use with Caution): <span id="locWFOPhone">--</span></p>
-      <button onclick="closeLocationPanel()">Close</button>
+      <h2 style="color: #4ecdc4; margin-bottom: 1.5rem;">Current Location Details</h2>
+      
+      <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; margin-bottom: 1rem; width: 90%; max-width: 400px;">
+        <h3 style="color: #ff6b6b; margin-bottom: 0.8rem; font-size: 1.1rem;">📍 Coordinates</h3>
+        <p style="margin: 0.5rem 0;"><strong>Latitude:</strong> <span id="locLat" style="color: #4ecdc4;">--</span></p>
+        <p style="margin: 0.5rem 0;"><strong>Longitude:</strong> <span id="locLon" style="color: #4ecdc4;">--</span></p>
+      </div>
+      
+      <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; margin-bottom: 1rem; width: 90%; max-width: 400px;">
+        <h3 style="color: #ff6b6b; margin-bottom: 0.8rem; font-size: 1.1rem;">🏙️ Location</h3>
+        <p style="margin: 0.5rem 0;"><strong>City:</strong> <span id="locCity" style="color: #4ecdc4;">--</span></p>
+        <p style="margin: 0.5rem 0;"><strong>State:</strong> <span id="locState" style="color: #4ecdc4;">--</span></p>
+        <p style="margin: 0.5rem 0;"><strong>County:</strong> <span id="locCounty" style="color: #4ecdc4;">--</span></p>
+      </div>
+      
+      <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; width: 90%; max-width: 400px;">
+        <h3 style="color: #ff6b6b; margin-bottom: 0.8rem; font-size: 1.1rem;">🌤️ Weather Office</h3>
+        <p style="margin: 0.5rem 0;"><strong>WFO:</strong> <span id="locWFO" style="color: #4ecdc4;">--</span></p>
+        <p style="margin: 0.5rem 0;"><strong>X/Twitter:</strong> <span id="locWFOHandle" style="color: #4ecdc4; font-weight: bold;">--</span></p>
+        <p style="margin: 0.5rem 0;"><strong>Phone:</strong> <span id="locWFOPhone" style="color: #ffd93d;">--</span></p>
+        <p style="font-size: 0.8rem; color: #ff6b6b; margin-top: 0.5rem;">⚠️ Use phone with caution during severe weather</p>
+      </div>
+      
+      <button onclick="closeLocationPanel()" style="padding: 0.7rem 2rem; background: #fff; color: #000; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 1rem;">Close</button>
     </div>
   </div>
 </div>
