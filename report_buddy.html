@@ -375,13 +375,24 @@
       <label for="eventType"></label>
       <select id="eventType">
         <option value="">Select Report Type</option>
-        <option value="Tornado">Tornado</option>
-        <option value="Funnel Cloud">Funnel Cloud</option>
-        <option value="Wall Cloud">Wall Cloud</option>
-        <option value="Hail">Hail</option>
-        <option value="Damage">Damage</option>
-        <option value="Flooding">Flooding</option>
-        <option value="Wild Fire">Wild Fire</option>
+        <optgroup label="Severe">
+          <option value="Tornado">Tornado</option>
+          <option value="Wall Cloud">Wall Cloud</option>
+          <option value="Funnel Cloud">Funnel Cloud</option>
+          <option value="Hail">Hail</option>
+        </optgroup>
+        <optgroup label="Flooding">
+          <option value="Flood">Flood</option>
+        </optgroup>
+        <optgroup label="Winter">
+          <option value="Snow Depth">Snow Depth</option>
+        </optgroup>
+        <optgroup label="Miscellaneous">
+          <option value="Damage">Damage</option>
+          <option value="Dust Storm">Dust Storm</option>
+          <option value="Fog">Fog</option>
+          <option value="Wildfire">Wildfire</option>
+        </optgroup>
       </select>
     </div>
 
@@ -413,6 +424,14 @@
 
     <div id="damageInput">
       <input type="text" id="damageDescription" placeholder="Describe damage type..." />
+    </div>
+
+    <div id="floodInput" style="position:absolute;top:15%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);padding:.5rem 1rem;border-radius:10px;z-index:25;font-size:1.25rem;font-weight:bold;text-align:center;display:none">
+      <input type="text" id="floodDescription" placeholder="Describe flooding..." style="background:transparent;color:#fff;font-size:1.25rem;border:1px solid #fff;border-radius:5px;outline:none;padding:.3rem .5rem;text-align:center;width:200px" />
+    </div>
+
+    <div id="snowDepthInput" style="position:absolute;top:15%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);padding:.5rem 1rem;border-radius:10px;z-index:25;font-size:1.25rem;font-weight:bold;text-align:center;display:none">
+      <input type="number" id="snowDepth" placeholder="Snow depth (inches)..." step="0.1" min="0" style="background:transparent;color:#fff;font-size:1.25rem;border:1px solid #fff;border-radius:5px;outline:none;padding:.3rem .5rem;text-align:center;width:200px" />
     </div>
 
     <button id="captureBtn" title="Capture Screen"></button>
@@ -629,7 +648,7 @@
     }
 
     let tweetInfo={
-      event:'',size:'',customHailSize:'',damageDescription:'',city:'',state:'',county:'',lat:'',lon:'',wfo:'',timestamp:'',heading:null
+      event:'',size:'',customHailSize:'',damageDescription:'',floodDescription:'',snowDepth:'',city:'',state:'',county:'',lat:'',lon:'',wfo:'',timestamp:'',heading:null
     };
 
     let currentStream = null;
@@ -740,6 +759,16 @@
         return;
       }
       
+      if (eventType.value === 'Flood' && !document.getElementById('floodDescription').value) {
+        showNotification('Please describe the flooding first!');
+        return;
+      }
+      
+      if (eventType.value === 'Snow Depth' && !document.getElementById('snowDepth').value) {
+        showNotification('Please enter snow depth first!');
+        return;
+      }
+      
       // Make absolutely sure notification is hidden before capture
       notification.style.display = 'none';
       
@@ -754,6 +783,8 @@
       const originalDisplay = eventSelector.style.display;
       const originalHailDisplay = customHailInput.style.display;
       const originalDamageDisplay = damageInput.style.display;
+      const originalFloodDisplay = document.getElementById('floodInput').style.display;
+      const originalSnowDisplay = document.getElementById('snowDepthInput').style.display;
       
       // Hide "Select Report Type" option if it's selected
       if (eventType.value === '') {
@@ -766,6 +797,8 @@
       // Hide custom input fields
       customHailInput.style.display = 'none';
       damageInput.style.display = 'none';
+      document.getElementById('floodInput').style.display = 'none';
+      document.getElementById('snowDepthInput').style.display = 'none';
       
       const overlay=document.getElementById('snapshot'),img=document.getElementById('snapshotImg');
       const canvas=await html2canvas(document.getElementById('app'),{useCORS:true, scale: window.devicePixelRatio || 3});
@@ -796,6 +829,8 @@
       document.getElementById('zoomOut').style.display = 'flex';
       customHailInput.style.display = originalHailDisplay;
       damageInput.style.display = originalDamageDisplay;
+      document.getElementById('floodInput').style.display = originalFloodDisplay;
+      document.getElementById('snowDepthInput').style.display = originalSnowDisplay;
     }
 
     async function fetchCountyName(url){
@@ -861,11 +896,19 @@
             customHailSize=document.getElementById('customHailSize'),
             damageInput=document.getElementById('damageInput'),
             damageDescription=document.getElementById('damageDescription');
+      const floodInput=document.getElementById('floodInput'),
+            floodDescription=document.getElementById('floodDescription'),
+            snowDepthInput=document.getElementById('snowDepthInput'),
+            snowDepth=document.getElementById('snowDepth');
+      
       function toggle(){
         const e=eventSel.value;
         tweetInfo.event=e;
         hailSel.style.display=e==='Hail'?'block':'none';
         damageInput.style.display=e==='Damage'?'block':'none';
+        floodInput.style.display=e==='Flood'?'block':'none';
+        snowDepthInput.style.display=e==='Snow Depth'?'block':'none';
+        
         if(e!=='Hail'){
           tweetInfo.size='';
           tweetInfo.customHailSize='';
@@ -876,6 +919,14 @@
         if(e!=='Damage'){
           tweetInfo.damageDescription='';
           damageDescription.value='';
+        }
+        if(e!=='Flood'){
+          tweetInfo.floodDescription='';
+          floodDescription.value='';
+        }
+        if(e!=='Snow Depth'){
+          tweetInfo.snowDepth='';
+          snowDepth.value='';
         }
       }
       function toggleCustomInput(){
@@ -893,6 +944,10 @@
       customHailSize.addEventListener('blur',()=>tweetInfo.customHailSize=customHailSize.value);
       damageDescription.addEventListener('input',()=>tweetInfo.damageDescription=damageDescription.value);
       damageDescription.addEventListener('blur',()=>tweetInfo.damageDescription=damageDescription.value);
+      floodDescription.addEventListener('input',()=>tweetInfo.floodDescription=floodDescription.value);
+      floodDescription.addEventListener('blur',()=>tweetInfo.floodDescription=floodDescription.value);
+      snowDepth.addEventListener('input',()=>tweetInfo.snowDepth=snowDepth.value);
+      snowDepth.addEventListener('blur',()=>tweetInfo.snowDepth=snowDepth.value);
     }
 
     function getWFOHANDLE(WFO){
@@ -1050,10 +1105,18 @@
       if(tweetInfo.event==='Damage'&&tweetInfo.damageDescription){
         damagePart=` (${tweetInfo.damageDescription})`;
       }
+      let floodPart='';
+      if(tweetInfo.event==='Flood'&&tweetInfo.floodDescription){
+        floodPart=` (${tweetInfo.floodDescription})`;
+      }
+      let snowPart='';
+      if(tweetInfo.event==='Snow Depth'&&tweetInfo.snowDepth){
+        snowPart=` (${tweetInfo.snowDepth} inches)`;
+      }
       const headingText=tweetInfo.heading!=null?` looking ${headingToCompass(tweetInfo.heading)}`:'';
 
       handle = getWFOHANDLE(tweetInfo.wfo);
-      t.value=`${tweetInfo.event}${sizePart}${damagePart} reported near ${tweetInfo.city}, ${tweetInfo.state} (Lat ${tweetInfo.lat}, Lon ${tweetInfo.lon}) - ${tweetInfo.timestamp}. #${tweetInfo.state}wx @${handle} // Generated by Report Buddy.`;
+      t.value=`${tweetInfo.event}${sizePart}${damagePart}${floodPart}${snowPart} reported near ${tweetInfo.city}, ${tweetInfo.state} (Lat ${tweetInfo.lat}, Lon ${tweetInfo.lon}) - ${tweetInfo.timestamp}. #${tweetInfo.state}wx @${handle} // Generated by Report Buddy.`;
       updateCharCounter();
       
       // Update image status indicator
@@ -1473,6 +1536,16 @@
       // Check if damage description is entered when report type is Damage
       if (eventType.value === 'Damage' && !document.getElementById('damageDescription').value) {
         showNotification('Please describe the damage first!');
+        return;
+      }
+      
+      if (eventType.value === 'Flood' && !document.getElementById('floodDescription').value) {
+        showNotification('Please describe the flooding first!');
+        return;
+      }
+      
+      if (eventType.value === 'Snow Depth' && !document.getElementById('snowDepth').value) {
+        showNotification('Please enter snow depth first!');
         return;
       }
       
