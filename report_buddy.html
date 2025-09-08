@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Report Buddy V0.5</title>
+  <title>Report Buddy V1.1</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
@@ -45,10 +45,11 @@
 
     #captureBtn:active{background:rgba(255,255,255,.4)}
 
-    #snapshot{position:absolute;inset:0;background:rgba(0,0,0,.85);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:40}
-    #snapshot img{max-width:100%;max-height:80%;border:4px solid #fff;border-radius:8px}
-    #snapshot .button-container{display:flex;gap:1rem;margin-top:1rem}
-    #snapshot button{padding:.5rem 1rem;font-size:1rem;border:none;border-radius:6px;background:#fff;cursor:pointer}
+    #snapshot{position:fixed;inset:0;background:#000;display:none;flex-direction:column;align-items:center;justify-content:flex-start;z-index:100;padding:1rem;box-sizing:border-box}
+    #snapshot img{width:100%;height:auto;max-height:calc(100vh - 100px);object-fit:contain;border:2px solid #fff;border-radius:8px;margin-top:1rem}
+    #snapshot .button-container{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);display:flex;gap:1.5rem;background:rgba(0,0,0,0.7);padding:0.8rem 1.5rem;border-radius:12px;border:2px solid #fff}
+    #snapshot button{padding:0.8rem 1.5rem;font-size:1.1rem;font-weight:bold;border:none;border-radius:8px;background:#fff;cursor:pointer;min-width:100px}
+    #snapshot button:active{background:#ddd}
     #loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:30}
 
     #tweetPanel{position:fixed;top:0;right:-100vw;width:98vw;height:100vh;background:rgba(0,0,0,.95);color:#fff;z-index:100;display:flex;align-items:center;justify-content:center;transition:right .3s ease; box-sizing: border-box; padding: 1rem; }
@@ -369,7 +370,7 @@
     <button id="zoomIn">+</button>
     <button id="zoomOut">−</button>
     <div id="geoInfo">Locating…</div>
-    <div id="reportbuddy">Report Buddy v0.5</div>
+    <div id="reportbuddy">Report Buddy v1.1</div>
 
     <div id="eventSelector">
       <label for="eventType"></label>
@@ -601,35 +602,19 @@
               alert('✅ Image copied to clipboard!\n\n📋 Just paste (Ctrl+V or Cmd+V) in the Twitter compose window to attach your storm photo.');
             }, 100);
           } else {
-            // Fallback: download image
-            const link = document.createElement('a');
-            link.href = cachedImageUrl;
-            const now = new Date();
-            const timestamp = `${String(now.getUTCMonth() + 1).padStart(2, '0')}_${String(now.getUTCDate()).padStart(2, '0')}_${now.getUTCFullYear()}_${String(now.getUTCHours()).padStart(2, '0')}${String(now.getUTCMinutes()).padStart(2, '0')}z`;
-            link.download = `storm_report_${timestamp}.jpg`;
-            link.click();
-            
-            setTimeout(() => {
-              window.open(twitterUrl, '_blank');
-              alert('📥 Image downloaded!\n\n📎 Click the image icon in Twitter and select your downloaded storm photo.');
-            }, 500);
+            // Just open Twitter without downloading
+            window.open(twitterUrl, '_blank');
+            alert('📷 Remember to attach your storm photo!\n\nUse the Download button first, then attach the image in Twitter.');
           }
         } catch (err) {
-          // If clipboard fails, use download fallback
+          // If clipboard fails, just open Twitter
           console.error('Clipboard API failed:', err);
-          const link = document.createElement('a');
-          link.href = cachedImageUrl;
-          link.download = `storm_report_${Date.now()}.jpg`;
-          link.click();
-          
-          setTimeout(() => {
-            window.open(twitterUrl, '_blank');
-            alert('📥 Image downloaded!\n\n📎 Click the image icon in Twitter and select your downloaded storm photo.');
-          }, 500);
+          window.open(twitterUrl, '_blank');
+          alert('📷 Remember to attach your storm photo!\n\nUse the Download button first, then attach the image in Twitter.');
         }
       } else {
         window.open(twitterUrl, '_blank');
-        alert('⚠️ No image captured yet. Take a photo first, then share to Twitter.');
+        alert('⚠️ No report-type selected. Take a photo first, then share to Twitter.');
       }
     }
 
@@ -785,6 +770,10 @@
           resolve();
         }, 'image/jpeg', 0.95);
       });
+      
+      // Hide video when showing snapshot
+      const video = document.getElementById('video');
+      video.style.display = 'none';
       
       overlay.style.display='flex';
       
@@ -1063,7 +1052,7 @@
         imageStatus.innerHTML = '📷 <strong>Image ready to share!</strong>';
         imageStatus.style.color = '#4ecdc4';
       } else {
-        imageStatus.innerHTML = '⚠️ No image captured yet';
+        imageStatus.innerHTML = '⚠️ No report-type selected.';
         imageStatus.style.color = '#ffd93d';
       }
       
@@ -1633,6 +1622,8 @@
       document.getElementById('captureBtn').addEventListener('click',capturePhoto);
       document.getElementById('closeSnap').addEventListener('click',()=>{
         document.getElementById('snapshot').style.display='none';
+        // Show video again when closing snapshot
+        document.getElementById('video').style.display = 'block';
         // Clean up old blob URL when closing
         if (cachedImageUrl && cachedImageUrl.startsWith('blob:')) {
           URL.revokeObjectURL(cachedImageUrl);
