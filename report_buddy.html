@@ -447,6 +447,7 @@
         <div id="imageStatus" style="color: #4ecdc4; font-size: 0.9rem; margin-bottom: 0.5rem;"></div>
         <button onclick="shareToTwitter()">Share to X</button>
         <button onclick="copyTweet()" style="margin-left: 0.5rem;">Copy Text</button>
+        <div style="color: #888; font-size: 0.8rem; margin-top: 0.8rem; font-style: italic;">Ensure you have downloaded the image before making a report.</div>
       </div>
     </div>
   </div>
@@ -1061,7 +1062,7 @@
       const hasImage = cachedImageBlob !== null;
       
       if (hasImage) {
-        imageStatus.innerHTML = '📷 <strong>Image ready to share!</strong>';
+        imageStatus.innerHTML = '📷 <strong>Report ready to share!</strong>';
         imageStatus.style.color = '#4ecdc4';
       } else if (!hasReportType && !hasImage) {
         imageStatus.innerHTML = '⚠️ No report-type or image captured.';
