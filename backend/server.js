@@ -83,8 +83,18 @@ app.post('/report_buddy_network/api/logout', (req, res) => {
 });
 
 // Submit new report (public endpoint for Report Buddy app)
-app.post('/api/reports', upload.single('image'), (req, res) => {
+app.post('/api/reports', cors({
+  origin: true, // Allow any origin for this public endpoint
+  credentials: false
+}), upload.single('image'), (req, res) => {
   try {
+    console.log('Report submission received:', {
+      type: req.body.type,
+      lat: req.body.lat,
+      lon: req.body.lon,
+      hasImage: !!req.file
+    });
+    
     const report = {
       id: nextId++,
       type: req.body.type,
@@ -173,23 +183,23 @@ async function generatePlacefile() {
       new Date(report.submitted_at) > cutoff
     );
     
-    let placefile = `Title: Report Buddy Network
+    let placefile = `Title: Report Buddy
 RefreshSeconds: 60
 Color: 255 255 255
 Font: 1, 11, 1, "Arial"
 
 `;
 
-    // Add icon definitions
+    // Use distinct symbols with strong colors for better visibility
     const iconMap = {
-      'Tornado': { id: 1, color: '255 0 0', symbol: 'T' },
-      'Wall Cloud': { id: 2, color: '255 128 0', symbol: 'W' },
-      'Funnel Cloud': { id: 3, color: '255 255 0', symbol: 'F' },
-      'Hail': { id: 4, color: '0 255 0', symbol: 'H' },
-      'Wind': { id: 5, color: '0 128 255', symbol: 'G' },
-      'Flood': { id: 6, color: '0 0 255', symbol: 'L' },
-      'Damage': { id: 7, color: '128 0 255', symbol: 'D' },
-      'Snow Depth': { id: 8, color: '200 200 255', symbol: 'S' }
+      'Tornado': { symbol: '🌪', color: '255 0 0' },
+      'Wall Cloud': { symbol: '☁', color: '255 128 0' },
+      'Funnel Cloud': { symbol: 'F', color: '255 255 0' },
+      'Hail': { symbol: '●', color: '0 255 0' },
+      'Wind': { symbol: 'W', color: '0 128 255' },
+      'Flood': { symbol: '~', color: '0 0 255' },
+      'Damage': { symbol: '⚠', color: '255 0 0' },
+      'Snow Depth': { symbol: 'S', color: '200 200 255' }
     };
 
     recentReports.forEach(report => {
