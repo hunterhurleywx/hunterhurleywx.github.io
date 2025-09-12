@@ -460,7 +460,9 @@
         <div id="imageStatus" style="color: #4ecdc4; font-size: 0.9rem; margin-bottom: 0.5rem;"></div>
         <button id="shareBtn" onclick="shareToTwitter()">Share to X</button>
         <button id="copyBtn" onclick="copyTweet()" style="margin-left: 0.5rem;">Copy Text</button>
-        <button id="submitNetworkBtn" onclick="submitToNetwork()" style="margin-left: 0.5rem; background: #4CAF50;">Submit to Network</button>
+        <div style="margin-top: 0.8rem;">
+          <button id="submitNetworkBtn" onclick="submitToNetwork()" style="background: #4CAF50; width: 100%;">Submit to Network</button>
+        </div>
         <div style="color: #888; font-size: 0.8rem; margin-top: 0.8rem; font-style: italic;">Ensure you have the image downloaded before making a report.</div>
       </div>
     </div>
@@ -707,14 +709,22 @@
         
         if (response.ok) {
           const result = await response.json();
-          alert(`✅ Report submitted to network successfully!\nReport ID: ${result.id}\n\nYour report will appear on GR2Analyst placefiles within 60 seconds.`);
+          if (result && result.success) {
+            alert(`✅ Report submitted to network successfully!\n\nReport ID: ${result.id}\nPlacefile: https://hhwx.me/placefile.txt\n\n📡 Your report will appear on GR2Analyst placefiles within 60 seconds.\n\n💡 To verify: Check the admin panel at https://hhwx.me/report_buddy_network`);
+            return; // Exit function on success
+          } else {
+            throw new Error('Network submission failed - invalid response');
+          }
         } else {
-          throw new Error('Network submission failed');
+          throw new Error(`Network submission failed - HTTP ${response.status}`);
         }
         
       } catch (error) {
         console.error('Network submission error:', error);
-        alert('❌ Failed to submit to network. Please try again or use Twitter sharing instead.');
+        // Only show error if there was actually an error
+        if (error.message && error.message !== 'undefined') {
+          alert('❌ Failed to submit to network. Please try again or use Twitter sharing instead.\n\nError: ' + error.message);
+        }
       }
     }
     
@@ -1219,9 +1229,9 @@
       const copyBtn = document.getElementById('copyBtn');
       const networkBtn = document.getElementById('submitNetworkBtn');
       
-      shareBtn.disabled = !isReady;
-      copyBtn.disabled = !isReady;
-      networkBtn.disabled = !hasReportType; // Network submission doesn't require image
+      if (shareBtn) shareBtn.disabled = !isReady;
+      if (copyBtn) copyBtn.disabled = !isReady;
+      if (networkBtn) networkBtn.disabled = !hasReportType; // Network submission doesn't require image
     }
 
     function openTweetPanel(){
