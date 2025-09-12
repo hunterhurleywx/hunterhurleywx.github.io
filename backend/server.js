@@ -183,10 +183,11 @@ async function generatePlacefile() {
       new Date(report.submitted_at) > cutoff
     );
     
-    let placefile = `Refresh: 1
-Title: Report Buddy
-Font: 1, 11, 1, "Arial"
+    let placefile = `Title: Report Buddy
 Threshold: 999
+RefreshSeconds: 60
+IconFile: 1, 32, 32, 16, 16, "https://hhwx.me/alert.png"
+Font: 1, 11, 1, "Arial"
 
 `;
 
@@ -206,8 +207,11 @@ Threshold: 999
       const icon = iconMap[report.type] || iconMap['Damage'];
       const age = Math.round((Date.now() - new Date(report.submitted_at)) / (1000 * 60));
       
-      placefile += `Color: ${icon.color}
-Text: ${report.lat}, ${report.lon}, 1, "${icon.symbol}", "${report.type}: ${report.details}\\n${report.location}\\nAge: ${age}min\\nSpotter: ${report.spotter_id}${report.verified ? ' ✓' : ''}"
+      placefile += `Object: ${report.lat}, ${report.lon}
+  Icon: 0, 0, 0, 1, 1, "${report.type}: ${report.details}\\n${report.location}\\nAge: ${age}min\\nSpotter: ${report.spotter_id}${report.verified ? ' ✓' : ''}"
+  Color: ${icon.color}
+  Text: -17, 17, 1, "${icon.symbol}", "${report.type}"
+End:
 
 `;
     });
