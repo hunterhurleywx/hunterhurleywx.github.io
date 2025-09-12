@@ -6,6 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const crypto = require('crypto');
+const fetch = require('node-fetch');
 const app = express();
 
 // Security: Hide password in obfuscated function
@@ -48,6 +49,39 @@ const upload = multer({ storage });
 // Simple in-memory storage (replace with database in production)
 let reports = [];
 let nextId = 1;
+let wfoReportCounts = {}; // Track report counts per WFO for the day
+
+// Get WFO from coordinates using NWS API
+async function getWFOFromCoordinates(lat, lon) {
+  try {
+    const response = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+    if (response.ok) {
+      const data = await response.json();
+      // Extract WFO code from gridId (e.g., "TOP" from "TOP")
+      return data.properties.gridId || 'UNKNOWN';
+    }
+  } catch (error) {
+    console.error('Error fetching WFO:', error);
+  }
+  return 'UNKNOWN';
+}
+
+// Reset WFO counts daily
+function resetDailyWFOCounts() {
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  
+  const msUntilMidnight = tomorrow - now;
+  
+  setTimeout(() => {
+    wfoReportCounts = {};
+    resetDailyWFOCounts(); // Schedule next reset
+  }, msUntilMidnight);
+}
+
+resetDailyWFOCounts(); // Initialize daily reset
 
 // Auth middleware
 const requireAuth = (req, res, next) => {
@@ -86,7 +120,7 @@ app.post('/report_buddy_network/api/logout', (req, res) => {
 app.post('/api/reports', cors({
   origin: true, // Allow any origin for this public endpoint
   credentials: false
-}), upload.single('image'), (req, res) => {
+}), upload.single('image'), async (req, res) => {
   try {
     console.log('Report submission received:', {
       type: req.body.type,
@@ -95,17 +129,49 @@ app.post('/api/reports', cors({
       hasImage: !!req.file
     });
     
+    const lat = parseFloat(req.body.lat);
+    const lon = parseFloat(req.body.lon);
+    
+    // Get WFO for this location
+    const wfo = await getWFOFromCoordinates(lat, lon);
+    console.log(`Report WFO: ${wfo}`);
+    
+    // Handle image caching by WFO
+    let cachedImageUrl = null;
+    if (req.file) {
+      // Increment WFO report count for the day
+      if (!wfoReportCounts[wfo]) {
+        wfoReportCounts[wfo] = 0;
+      }
+      wfoReportCounts[wfo]++;
+      
+      // Create single image directory
+      const imageDir = path.join(__dirname, 'public', 'report_buddy', 'image');
+      await fs.mkdir(imageDir, { recursive: true });
+      
+      // Copy image with WFO prefix
+      const cachedFileName = `${wfo.toLowerCase()}_report_${wfoReportCounts[wfo]}.jpg`;
+      const cachedFilePath = path.join(imageDir, cachedFileName);
+      const uploadedFilePath = path.join(__dirname, req.file.path);
+      
+      await fs.copyFile(uploadedFilePath, cachedFilePath);
+      cachedImageUrl = `/report_buddy/image/${cachedFileName}`;
+      console.log(`Cached image: ${cachedImageUrl}`);
+    }
+    
     const report = {
       id: nextId++,
       type: req.body.type,
-      lat: parseFloat(req.body.lat),
-      lon: parseFloat(req.body.lon),
+      lat: lat,
+      lon: lon,
       timestamp: req.body.timestamp || new Date().toISOString(),
       location: req.body.location,
       details: req.body.details,
       spotter_id: req.body.spotter_id || 'Anonymous',
       confidence: parseInt(req.body.confidence) || 5,
       image_url: req.file ? `/uploads/${req.file.filename}` : null,
+      cached_image_url: cachedImageUrl,
+      wfo: wfo,
       submitted_at: new Date().toISOString(),
       verified: false
     };
@@ -175,6 +241,9 @@ app.get('/report_buddy_network', (req, res) => {
 // Serve uploaded images (protected)
 app.use('/uploads', requireAuth, express.static('uploads'));
 
+// Serve cached WFO images (public)
+app.use('/report_buddy/image', express.static(path.join(__dirname, 'public/report_buddy/image')));
+
 // Generate placefile with 90-minute expiration
 async function generatePlacefile() {
   try {
@@ -183,11 +252,11 @@ async function generatePlacefile() {
       new Date(report.submitted_at) > cutoff
     );
     
-    let placefile = `Title: Report Buddy
+    let placefile = `Refresh: 1
 Threshold: 999
-RefreshSeconds: 60
-IconFile: 1, 32, 32, 16, 16, "https://hhwx.me/alert.png"
-Font: 1, 11, 1, "Arial"
+Title: Report Buddy
+Font: 1, 11, 0, "Courier New"
+IconFile: 1, 48, 48, 24, 24, "https://hhwx.me/alert-large.png"
 
 `;
 
@@ -207,10 +276,11 @@ Font: 1, 11, 1, "Arial"
       const icon = iconMap[report.type] || iconMap['Damage'];
       const age = Math.round((Date.now() - new Date(report.submitted_at)) / (1000 * 60));
       
-      placefile += `Object: ${report.lat}, ${report.lon}
-  Icon: 0, 0, 0, 1, 1, "${report.type}: ${report.details}\\n${report.location}\\nAge: ${age}min\\nSpotter: ${report.spotter_id}${report.verified ? ' ✓' : ''}"
-  Color: ${icon.color}
-  Text: -17, 17, 1, "${icon.symbol}", "${report.type}"
+      const reportTime = new Date(report.submitted_at).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, ' UTC');
+      const additionalInfo = report.details || 'N/A';
+      
+      placefile += `Object: ${report.lat},${report.lon}
+Icon: 0,0,000,1,1,"Report Type: ${report.type}\\nAdditional Information: ${additionalInfo}\\nLocation: ${report.location}\\nCoordinates: ${report.lat}, ${report.lon}\\nTime: ${reportTime}\\nSpotter: ${report.spotter_id}\\nVerified: ${report.verified ? 'Yes' : 'No'}"
 End:
 
 `;
