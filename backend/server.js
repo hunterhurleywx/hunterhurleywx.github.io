@@ -278,9 +278,10 @@ IconFile: 1, 48, 48, 24, 24, "https://hhwx.me/alert-large.png"
       
       const reportTime = new Date(report.submitted_at).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, ' UTC');
       const additionalInfo = report.details || 'N/A';
+      const imageLink = report.cached_image_url ? `\\n\\nhttps://hhwx.me${report.cached_image_url}` : '';
       
       placefile += `Object: ${report.lat},${report.lon}
-Icon: 0,0,000,1,1,"Report Type: ${report.type}\\nAdditional Information: ${additionalInfo}\\nLocation: ${report.location}\\nCoordinates: ${report.lat}, ${report.lon}\\nTime: ${reportTime}\\nSpotter: ${report.spotter_id}\\nVerified: ${report.verified ? 'Yes' : 'No'}"
+Icon: 0,0,000,1,1,"Report Type: ${report.type}\\nLocation: ${report.location}\\nAdditional Information: ${additionalInfo}\\nCoordinates: ${report.lat}, ${report.lon}\\nTime: ${reportTime}\\nSpotter: ${report.spotter_id}\\nVerified: ${report.verified ? 'Yes' : 'No'}${imageLink}"
 End:
 
 `;
