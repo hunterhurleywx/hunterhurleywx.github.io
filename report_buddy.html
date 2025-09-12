@@ -370,7 +370,7 @@
     <button id="zoomIn">+</button>
     <button id="zoomOut">−</button>
     <div id="geoInfo">Locating…</div>
-    <div id="reportbuddy">Report Buddy v1.3.2</div>
+    <div id="reportbuddy">Report Buddy v1.3.3</div>
 
     <div id="eventSelector">
       <label for="eventCategory"></label>
@@ -721,7 +721,7 @@
           }
           
           if (result && result.success) {
-            alert(`✅ Report submitted to network successfully!\n\nReport ID: ${result.id}\nPlacefile: https://hhwx.me/placefile.txt\n\n📡 Your report will appear on GR2Analyst placefiles within 60 seconds.\n\n💡 To verify: Check the admin panel at https://hhwx.me/report_buddy_network`);
+            alert('Report Submitted,\nThank You.');
             return; // Exit function on success
           } else {
             throw new Error(`Network submission failed - server response: ${JSON.stringify(result)}`);
