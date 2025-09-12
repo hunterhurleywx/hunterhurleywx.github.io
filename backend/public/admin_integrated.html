@@ -355,6 +355,7 @@
             <th>Time</th>
             <th>Type</th>
             <th>Location</th>
+            <th>WFO</th>
             <th>Coordinates</th>
             <th>Details</th>
             <th>Spotter</th>
@@ -365,7 +366,7 @@
         </thead>
         <tbody id="reportsTable">
           <tr>
-            <td colspan="9" style="text-align: center; padding: 40px;">Loading reports...</td>
+            <td colspan="10" style="text-align: center; padding: 40px;">Loading reports...</td>
           </tr>
         </tbody>
       </table>
@@ -524,7 +525,7 @@
       const tbody = document.getElementById('reportsTable');
       
       if (reports.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">No reports found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 40px;">No reports found</td></tr>';
         return;
       }
       
@@ -540,6 +541,7 @@
             </td>
             <td><span class="report-type ${typeClass}">${report.type}</span></td>
             <td>${report.location}</td>
+            <td><strong>${report.wfo || 'N/A'}</strong></td>
             <td class="coordinates">${report.lat.toFixed(4)}, ${report.lon.toFixed(4)}</td>
             <td>${report.details || 'No details'}</td>
             <td>${report.spotter_id}</td>
@@ -547,7 +549,7 @@
               ${report.verified ? '✓ Verified' : '⚠ Unverified'}
             </td>
             <td>
-              ${report.image_url ? `<a href="#" onclick="viewImage('${report.image_url}', ${report.id})" style="color: #4CAF50;">View</a>` : 'No image'}
+              ${report.cached_image_url ? `<a href="${report.cached_image_url}" target="_blank" style="color: #4CAF50;">View</a>` : 'No image'}
             </td>
             <td>
               ${!report.verified ? `<button class="btn-verify" onclick="verifyReport(${report.id})">Verify</button>` : ''}
