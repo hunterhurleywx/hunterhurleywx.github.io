@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Report Buddy V1.2.2</title>
+  <title>Report Buddy V1.3.1</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
@@ -370,7 +370,7 @@
     <button id="zoomIn">+</button>
     <button id="zoomOut">−</button>
     <div id="geoInfo">Locating…</div>
-    <div id="reportbuddy">Report Buddy v1.2.2</div>
+    <div id="reportbuddy">Report Buddy v1.3.1</div>
 
     <div id="eventSelector">
       <label for="eventCategory"></label>
@@ -460,6 +460,7 @@
         <div id="imageStatus" style="color: #4ecdc4; font-size: 0.9rem; margin-bottom: 0.5rem;"></div>
         <button id="shareBtn" onclick="shareToTwitter()">Share to X</button>
         <button id="copyBtn" onclick="copyTweet()" style="margin-left: 0.5rem;">Copy Text</button>
+        <button id="submitNetworkBtn" onclick="submitToNetwork()" style="margin-left: 0.5rem; background: #4CAF50;">Submit to Network</button>
         <div style="color: #888; font-size: 0.8rem; margin-top: 0.8rem; font-style: italic;">Ensure you have the image downloaded before making a report.</div>
       </div>
     </div>
@@ -663,6 +664,80 @@
         window.open(twitterUrl, '_blank');
         alert(alertMessage);
       }
+    }
+
+    async function submitToNetwork() {
+      // Check if report type is selected
+      if (!tweetInfo.event || tweetInfo.event === '') {
+        showNotification('Please select a report type first!');
+        return;
+      }
+      
+      try {
+        // Prepare report data
+        const reportData = {
+          type: tweetInfo.event,
+          lat: tweetInfo.lat,
+          lon: tweetInfo.lon,
+          timestamp: tweetInfo.timestamp,
+          location: `${tweetInfo.city}, ${tweetInfo.state}`,
+          details: getReportDetails(),
+          spotter_id: getSpotterInfo(),
+          confidence: 8 // Default confidence level
+        };
+        
+        // Create form data for submission (in case we want to add image later)
+        const formData = new FormData();
+        Object.keys(reportData).forEach(key => {
+          if (reportData[key] !== null && reportData[key] !== undefined) {
+            formData.append(key, reportData[key]);
+          }
+        });
+        
+        // Add image if available
+        if (cachedImageBlob) {
+          formData.append('image', cachedImageBlob, 'report-image.jpg');
+        }
+        
+        // Submit to network
+        const response = await fetch('https://hhwx.me/api/reports', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          alert(`✅ Report submitted to network successfully!\nReport ID: ${result.id}\n\nYour report will appear on GR2Analyst placefiles within 60 seconds.`);
+        } else {
+          throw new Error('Network submission failed');
+        }
+        
+      } catch (error) {
+        console.error('Network submission error:', error);
+        alert('❌ Failed to submit to network. Please try again or use Twitter sharing instead.');
+      }
+    }
+    
+    function getReportDetails() {
+      if (tweetInfo.event === 'Hail') {
+        if (tweetInfo.size === 'Other (>5.00″) Describe hail size...' && tweetInfo.customHailSize) {
+          return tweetInfo.customHailSize;
+        } else if (tweetInfo.size) {
+          return tweetInfo.size;
+        }
+      } else if (tweetInfo.event === 'Damage' && tweetInfo.damageDescription) {
+        return tweetInfo.damageDescription;
+      } else if (tweetInfo.event === 'Flood' && tweetInfo.floodDescription) {
+        return tweetInfo.floodDescription;
+      } else if (tweetInfo.event === 'Snow Depth' && tweetInfo.snowDepth) {
+        return `${tweetInfo.snowDepth} inches`;
+      }
+      return tweetInfo.event || 'No details provided';
+    }
+    
+    function getSpotterInfo() {
+      // For now, return anonymous. Could add spotter registration later
+      return 'Anonymous';
     }
 
     let tweetInfo={
@@ -1142,9 +1217,11 @@
       
       const shareBtn = document.getElementById('shareBtn');
       const copyBtn = document.getElementById('copyBtn');
+      const networkBtn = document.getElementById('submitNetworkBtn');
       
       shareBtn.disabled = !isReady;
       copyBtn.disabled = !isReady;
+      networkBtn.disabled = !hasReportType; // Network submission doesn't require image
     }
 
     function openTweetPanel(){
