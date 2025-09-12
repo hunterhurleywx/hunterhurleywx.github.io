@@ -183,22 +183,22 @@ async function generatePlacefile() {
       new Date(report.submitted_at) > cutoff
     );
     
-    let placefile = `Title: Report Buddy
-RefreshSeconds: 60
-Color: 255 255 255
+    let placefile = `Refresh: 1
+Title: Report Buddy
 Font: 1, 11, 1, "Arial"
+Threshold: 999
 
 `;
 
-    // Use distinct symbols with strong colors for better visibility
+    // Use simple ASCII symbols for maximum compatibility
     const iconMap = {
-      'Tornado': { symbol: '🌪', color: '255 0 0' },
-      'Wall Cloud': { symbol: '☁', color: '255 128 0' },
+      'Tornado': { symbol: 'T', color: '255 0 0' },
+      'Wall Cloud': { symbol: 'W', color: '255 128 0' },
       'Funnel Cloud': { symbol: 'F', color: '255 255 0' },
-      'Hail': { symbol: '●', color: '0 255 0' },
-      'Wind': { symbol: 'W', color: '0 128 255' },
-      'Flood': { symbol: '~', color: '0 0 255' },
-      'Damage': { symbol: '⚠', color: '255 0 0' },
+      'Hail': { symbol: 'H', color: '0 255 0' },
+      'Wind': { symbol: 'G', color: '0 128 255' },
+      'Flood': { symbol: 'L', color: '0 0 255' },
+      'Damage': { symbol: 'D', color: '255 0 0' },
       'Snow Depth': { symbol: 'S', color: '200 200 255' }
     };
 
@@ -206,11 +206,8 @@ Font: 1, 11, 1, "Arial"
       const icon = iconMap[report.type] || iconMap['Damage'];
       const age = Math.round((Date.now() - new Date(report.submitted_at)) / (1000 * 60));
       
-      placefile += `Object: ${report.lat}, ${report.lon}
-  Threshold: 999
-  Color: ${icon.color}
-  Text: ${report.lat}, ${report.lon}, 1, "${icon.symbol}", "${report.type}: ${report.details}\\n${report.location}\\nAge: ${age}min\\nSpotter: ${report.spotter_id}${report.verified ? ' ✓' : ''}"
-End:
+      placefile += `Color: ${icon.color}
+Text: ${report.lat}, ${report.lon}, 1, "${icon.symbol}", "${report.type}: ${report.details}\\n${report.location}\\nAge: ${age}min\\nSpotter: ${report.spotter_id}${report.verified ? ' ✓' : ''}"
 
 `;
     });
