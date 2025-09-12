@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Buddy Network - Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    
+    .login-container {
+      background: rgba(51, 51, 51, 0.9);
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    
+    .logo {
+      font-size: 2em;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #4CAF50;
+    }
+    
+    .subtitle {
+      color: #bbb;
+      margin-bottom: 30px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #ccc;
+    }
+    
+    input {
+      width: 100%;
+      padding: 12px;
+      background: #555;
+      color: white;
+      border: 2px solid #666;
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+    
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background: #45a049;
+    }
+    
+    button:disabled {
+      background: #666;
+      cursor: not-allowed;
+    }
+    
+    .error {
+      background: #f44336;
+      color: white;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    
+    .footer {
+      margin-top: 30px;
+      font-size: 0.9em;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="logo">Report Buddy Network</div>
+    <div class="subtitle">Admin Access</div>
+    
+    <div class="error" id="errorMessage"></div>
+    
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      
+      <button type="submit" id="loginBtn">Login</button>
+    </form>
+    
+    <div class="footer">
+      Authorized personnel only
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const errorDiv = document.getElementById('errorMessage');
+      const loginBtn = document.getElementById('loginBtn');
+      
+      // Clear previous error
+      errorDiv.style.display = 'none';
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Logging in...';
+      
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          // Redirect to admin panel
+          window.location.href = '/report_buddy_network';
+        } else {
+          showError(data.error || 'Login failed');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        showError('Network error. Please try again.');
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+      }
+    });
+    
+    function showError(message) {
+      const errorDiv = document.getElementById('errorMessage');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+    }
+    
+    // Focus username field on page load
+    document.getElementById('username').focus();
+  </script>
+</body>
+</html>
