@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Report Buddy V1.3.4</title>
+  <title>Report Buddy V1.3.5</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
@@ -370,7 +370,7 @@
     <button id="zoomIn">+</button>
     <button id="zoomOut">−</button>
     <div id="geoInfo">Locating…</div>
-    <div id="reportbuddy">Report Buddy v1.3.4</div>
+    <div id="reportbuddy">Report Buddy v1.3.5</div>
 
     <div id="eventSelector">
       <label for="eventCategory"></label>
@@ -461,7 +461,7 @@
         <button id="shareBtn" onclick="shareToTwitter()">Share to X</button>
         <button id="copyBtn" onclick="copyTweet()" style="margin-left: 0.5rem;">Copy Text</button>
         <div style="margin-top: 0.8rem;">
-          <button id="submitNetworkBtn" onclick="submitToNetwork()" style="background: #4CAF50; width: 100%;">Submit to Network</button>
+          <button id="submitNetworkBtn" onclick="submitToNetwork()" style="background: #4CAF50; width: 100%;" disabled>Submit to Network</button>
         </div>
         <div style="color: #888; font-size: 0.8rem; margin-top: 0.8rem; font-style: italic;">Ensure you have the image downloaded before making a report.</div>
       </div>
@@ -668,19 +668,20 @@
       }
     }
 
+    function updateSubmitButton() {
+      const submitBtn = document.getElementById('submitNetworkBtn');
+      if (cachedImageBlob && tweetInfo.event && tweetInfo.event !== '') {
+        submitBtn.disabled = false;
+        submitBtn.style.background = '#4CAF50';
+        submitBtn.style.opacity = '1';
+      } else {
+        submitBtn.disabled = true;
+        submitBtn.style.background = '#888';
+        submitBtn.style.opacity = '0.5';
+      }
+    }
+
     async function submitToNetwork() {
-      // Check if photo is captured
-      if (!cachedImageBlob) {
-        showNotification('Please capture a photo first!');
-        return;
-      }
-      
-      // Check if report type is selected
-      if (!tweetInfo.event || tweetInfo.event === '') {
-        showNotification('Please select a report type first!');
-        return;
-      }
-      
       try {
         // Prepare report data
         const reportData = {
@@ -926,6 +927,7 @@
           cachedImageBlob = blob;
           cachedImageUrl = URL.createObjectURL(blob);
           img.src = cachedImageUrl;
+          updateSubmitButton();
           img.dataset.dataUrl = cachedImageUrl;
           resolve();
         }, 'image/jpeg', 0.95);
@@ -1049,6 +1051,7 @@
       function toggle(){
         const e=eventSel.value;
         tweetInfo.event=e;
+        updateSubmitButton();
         hailSel.style.display=e==='Hail'?'block':'none';
         damageInput.style.display=e==='Damage'?'block':'none';
         floodInput.style.display=e==='Flood'?'block':'none';
@@ -1883,6 +1886,7 @@
         }
         cachedImageBlob = null;
         cachedImageUrl = null;
+        updateSubmitButton();
       });
       document.getElementById('downloadSnap').addEventListener('click',downloadImage);
       document.getElementById('zoomIn').addEventListener('click',zoomIn);
