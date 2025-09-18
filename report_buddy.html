@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Report Buddy V1.3.8</title>
+  <title>Report Buddy V1.3.9</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
@@ -370,7 +370,7 @@
     <button id="zoomIn">+</button>
     <button id="zoomOut">−</button>
     <div id="geoInfo">Locating…</div>
-    <div id="reportbuddy">Report Buddy v1.3.8</div>
+    <div id="reportbuddy">Report Buddy v1.3.9</div>
 
     <div id="eventSelector">
       <label for="eventCategory"></label>
@@ -791,8 +791,8 @@
       const VIDEO_CONSTRAINTS = {
         video: {
           facingMode: { ideal: 'environment' },
-          width: { ideal: 1920 },   // Force HD width
-          height: { ideal: 1080 },  // Force HD height
+          width: { ideal: 3840, min: 1920 },   // Request 4K, minimum HD
+          height: { ideal: 2160, min: 1080 },  // Request 4K, minimum HD
           frameRate: { ideal: 30, max: 60 }
         },
         audio: false
@@ -928,7 +928,7 @@
       document.getElementById('snowDepthInput').style.display = 'none';
       
       const overlay=document.getElementById('snapshot'),img=document.getElementById('snapshotImg');
-      const canvas=await html2canvas(document.getElementById('app'),{useCORS:true, scale: window.devicePixelRatio || 3});
+      const canvas=await html2canvas(document.getElementById('app'),{useCORS:true, scale: 3});
       
       // Convert to blob for better caching - wait for it to complete
       await new Promise((resolve) => {
@@ -939,7 +939,7 @@
           updateSubmitButton();
           img.dataset.dataUrl = cachedImageUrl;
           resolve();
-        }, 'image/jpeg', 0.95);
+        }, 'image/jpeg', 0.98);
       });
       
       // Hide video when showing snapshot
@@ -1760,8 +1760,8 @@
           stream = await navigator.mediaDevices.getUserMedia({ 
             video: {
               facingMode: { ideal: 'environment' },
-              width: { ideal: 1920 },
-              height: { ideal: 1080 }
+              width: { ideal: 3840, min: 1920 },
+              height: { ideal: 2160, min: 1080 }
             },
             audio: true 
           });
