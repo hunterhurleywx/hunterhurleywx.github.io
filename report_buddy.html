@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Report Buddy V1.3.15</title>
+  <title>Report Buddy V1.3.16</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
@@ -21,7 +21,7 @@
 
     #eventSelector{position:absolute;top:5%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);padding:.5rem 1rem;border-radius:10px;z-index:25;font-size:1.45rem;font-weight:bold;text-align:center; white-space: nowrap; overflow: visible; text-overflow: ellipsis; max-width: 100%;}
 
-    #eventSelector select{background:transparent;color:#fff;font-size:1.4rem;border:none;outline:none;appearance:none max-width: 90vw; text-align: center; box-sizing: border-box; white-space: nowrap; overflow: visible; text-overflow: ellipsis;}
+    #eventSelector select{background:transparent;color:#fff;font-size:1.4rem;border:none;outline:none;appearance:none; max-width: 90vw; text-align: center; box-sizing: border-box; white-space: nowrap; overflow: visible; text-overflow: ellipsis;}
 
     #hailSizeSelector{position:absolute;top:17%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);padding:.5rem 1rem;border-radius:10px;z-index:25;font-size:1.25rem;font-weight:bold;text-align:center;display:none}
 
@@ -370,10 +370,9 @@
     <button id="zoomIn">+</button>
     <button id="zoomOut">−</button>
     <div id="geoInfo">Locating…</div>
-    <div id="reportbuddy">Report Buddy v1.3.15</div>
+    <div id="reportbuddy">Report Buddy v1.3.16</div>
 
     <div id="eventSelector">
-      <label for="eventCategory"></label>
       <select id="eventCategory">
         <option value="">Select Category</option>
         <option value="Severe">Severe</option>
@@ -725,8 +724,6 @@
         });
         
         const responseText = await response.text();
-        console.log('Network response status:', response.status);
-        console.log('Network response text:', responseText);
         
         if (response.ok) {
           let result;
@@ -810,7 +807,6 @@
         const track = stream.getVideoTracks()[0];
         const capabilities = track.getCapabilities();
         if (capabilities.zoom) {
-          console.log('Camera zoom supported:', capabilities.zoom);
         }
       }catch(e){alert('Camera error: '+e.message);}
       loader.style.display='none';
@@ -830,7 +826,6 @@
         try {
           await track.applyConstraints(constraints);
           currentZoom = zoomLevel;
-          console.log('Zoom set to:', zoomLevel);
         } catch (e) {
           console.warn('Failed to set zoom:', e);
         }
@@ -839,7 +834,6 @@
         const video = document.getElementById('video');
         video.style.transform = `scale(${zoomLevel})`;
         currentZoom = zoomLevel;
-        console.log('Using CSS zoom:', zoomLevel);
       }
     }
 
@@ -972,7 +966,6 @@
       }catch{return url.split('/').pop();}
     }
 
-//TODO: Bug fix NWS Twitter handle formatting pull from dictonary of WFO IDs to handle. {OUN: @NWSNORMAN} stupid ass weather service
     async function fetchNwsInfo(lat,lon,heading){
       const info=document.getElementById('geoInfo');
 
@@ -1110,7 +1103,6 @@
     }
 
     function getWFOHANDLE(WFO){
-      console.log('getting wfo X handle');
       const wfo_handles= {
         "ABQ": "NWSAlbuquerque",
         "ABR": "NWSAberdeen",
@@ -1314,7 +1306,6 @@
       updateButtonStates();
       document.getElementById('tweetPanel').classList.add('open');
       isPanelOpen = true;
-      console.log('opend tweet panel');
     }
 
 //    function closeTweetPanel(){
@@ -1352,7 +1343,6 @@
     function closeTweetPanel() {
       document.getElementById('tweetPanel').classList.remove('open');
       isPanelOpen = false;
-      console.log('closed tweet panel');
     }
 
     function openLocationPanel() {
@@ -1497,7 +1487,6 @@
       document.getElementById('locCity').textContent = tweetInfo.city || '--';
       document.getElementById('locState').textContent = tweetInfo.state || '--';
       document.getElementById('locCounty').textContent = tweetInfo.county || '--';
-      //console.log(tweetInfo.wfo);
       document.getElementById('locWFO').textContent = tweetInfo.wfo || '--';
       document.getElementById('locWFOHandle').textContent = `@${handle}` || '--';
       document.getElementById('locWFOPhone').textContent = wfo_phone_number || '--';
