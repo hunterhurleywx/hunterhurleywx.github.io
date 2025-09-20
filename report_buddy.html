@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Report Buddy V1.3.16</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -807,6 +810,7 @@
         const track = stream.getVideoTracks()[0];
         const capabilities = track.getCapabilities();
         if (capabilities.zoom) {
+          console.log('Camera zoom supported');
         }
       }catch(e){alert('Camera error: '+e.message);}
       loader.style.display='none';
