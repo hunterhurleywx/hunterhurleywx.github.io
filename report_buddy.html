@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Report Buddy V1.3.9</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/alert-icons/Tornado.png">
+  <meta name="theme-color" content="#FF4444">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
@@ -495,6 +498,21 @@
         <p style="margin: 0.5rem 0;"><strong>X/Twitter:</strong> <span id="locWFOHandle" style="color: #4ecdc4; font-weight: bold;">--</span></p>
         <p style="margin: 0.5rem 0;"><strong>Phone:</strong> <span id="locWFOPhone" style="color: #ffd93d;">--</span></p>
         <p style="font-size: 0.8rem; color: #ff6b6b; margin-top: 0.5rem;">⚠️ Use phone with caution during severe weather</p>
+      </div>
+      
+      <!-- Add to Home Screen Section -->
+      <div id="installSection" style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; width: 90%; max-width: 400px; display: none;">
+        <h3 style="color: #4ecdc4; margin-bottom: 0.8rem; font-size: 1.1rem;">📱 Quick Access</h3>
+        <button id="installButton" style="background: #ff4444; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-size: 1rem; font-weight: bold; width: 100%; cursor: pointer; transition: all 0.3s ease;">
+          Add to Home Screen
+        </button>
+        <div id="iosInstructions" style="display: none; margin-top: 0.8rem; font-size: 0.9rem; color: #4ecdc4;">
+          <p style="margin: 0.3rem 0;">📋 <strong>iOS Instructions:</strong></p>
+          <p style="margin: 0.3rem 0;">1. Tap the Share button (⬆️)</p>
+          <p style="margin: 0.3rem 0;">2. Select "Add to Home Screen"</p>
+          <p style="margin: 0.3rem 0;">3. Tap "Add" to create shortcut</p>
+        </div>
+        <p style="font-size: 0.8rem; color: #ffd93d; margin-top: 0.5rem; margin-bottom: 0;">⚡ Access Report Buddy instantly during storms</p>
       </div>
     </div>
   </div>
@@ -1918,7 +1936,67 @@
       
       // Initialize submit button state on page load
       updateSubmitButton();
+      
+      // PWA Install functionality
+      initializePWAInstall();
     });
+    
+    // PWA Installation Logic
+    let deferredPrompt;
+    
+    function initializePWAInstall() {
+      const installSection = document.getElementById('installSection');
+      const installButton = document.getElementById('installButton');
+      const iosInstructions = document.getElementById('iosInstructions');
+      
+      // Check if app is already installed
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        // Already installed, don't show install section
+        return;
+      }
+      
+      // Detect iOS Safari
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      
+      if (isIOS) {
+        // Show iOS instructions instead of install button
+        installButton.style.display = 'none';
+        iosInstructions.style.display = 'block';
+        installSection.style.display = 'block';
+      }
+      
+      // Listen for beforeinstallprompt event (Chrome/Opera)
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Show install button for Chrome/Opera
+        installButton.style.display = 'block';
+        iosInstructions.style.display = 'none';
+        installSection.style.display = 'block';
+      });
+      
+      // Handle install button click
+      installButton.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          
+          if (outcome === 'accepted') {
+            installSection.style.display = 'none';
+            showNotification('Report Buddy added to home screen! 📱');
+          }
+          
+          deferredPrompt = null;
+        }
+      });
+      
+      // Listen for successful installation
+      window.addEventListener('appinstalled', () => {
+        installSection.style.display = 'none';
+        showNotification('Report Buddy successfully installed! 🎉');
+      });
+    }
   </script>
 </body>
 </html>
