@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Report Buddy V1.3.11</title>
+  <title>Report Buddy V1.3.12</title>
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/alert-icons/Tornado.png">
   <meta name="theme-color" content="#FF4444">
@@ -373,7 +373,7 @@
     <button id="zoomIn">+</button>
     <button id="zoomOut">−</button>
     <div id="geoInfo">Locating…</div>
-    <div id="reportbuddy">Report Buddy v1.3.11</div>
+    <div id="reportbuddy">Report Buddy v1.3.12</div>
 
     <div id="eventSelector">
       <label for="eventCategory"></label>
@@ -1939,6 +1939,13 @@
       
       // PWA Install functionality
       initializePWAInstall();
+      
+      // Register service worker for PWA
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => console.log('SW registered'))
+          .catch(error => console.log('SW registration failed'));
+      }
     });
     
     // PWA Installation Logic
@@ -1980,15 +1987,18 @@
       // Handle install button click
       installButton.addEventListener('click', async () => {
         if (deferredPrompt) {
+          // Use native PWA install prompt
           deferredPrompt.prompt();
           const { outcome } = await deferredPrompt.userChoice;
           
           if (outcome === 'accepted') {
-            installSection.style.display = 'none';
             showNotification('Report Buddy added to home screen! 📱');
           }
           
           deferredPrompt = null;
+        } else {
+          // Fallback: Show manual instructions
+          showNotification('📱 To add to home screen:\n1. Tap Chrome menu (⋮)\n2. Select "Add to Home screen"\n3. Tap "Add"');
         }
       });
       
